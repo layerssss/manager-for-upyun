@@ -1,0 +1,36 @@
+---
+title: 又拍云资源管理器
+---
+#login
+  .row
+    .col-xs-8
+      %form#formLogin.form-horizontal{ role: :form }
+        .form-group
+          %label.control-label.col-xs-5{ for: 'inputUsername' } 操作员用户名：
+          .col-sm-7
+            %input#inputUsername.form-control{ type: :text, name: :username }
+        .form-group
+          %label.control-label.col-xs-5{ for: 'inputPassword' } 操作员密码：
+          .col-sm-7
+            %input#inputPassword.form-control{ type: :password, name: :password }
+        .form-group
+          %label.control-label.col-xs-5{ for: 'inputBucket' } 空间名：
+          .col-sm-7
+            %input#inputBucket.form-control{ type: :text, name: :bucket }
+        .form-group.pull-right
+          %button.btn.btn-primary{ type: :submit } 连接
+          %button#btnAddFav.btn.btn-default{ type: :button } 保存
+    .col-xs-4
+      .well
+        %ul#favs.nav.nav-pills
+#filelist
+  %ol#path.breadcrumb
+  %table.table.table-hover
+    %thead
+      %th
+      %th 尺寸
+      %th 最后修改时间
+      %th
+    %tbody
+
+

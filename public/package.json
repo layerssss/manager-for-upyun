@@ -1,0 +1,16 @@
+{
+  "name": "manager_for_upyun",
+  "main": "index.html",
+  "window": {
+    "icon": "app.ico",
+    "toolbar": false,
+    "width": 1000,
+    "height": 500
+  },
+  "dependencies": {
+    "request": "^2.34.0",
+    "moment": "^2.6.0",
+    "mkdirp": "^0.3.5",
+    "async": "^0.7.0"
+  }
+}

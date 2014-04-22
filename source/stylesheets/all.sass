@@ -1,0 +1,60 @@
+// = require bootswatch/spacelab/bootstrap
+// = require win8loading
+// = require messenger/build/css/messenger
+// = require messenger/build/css/messenger-spinner
+// = require messenger/build/css/messenger-theme-future
+// = require font-awesome
+body
+  padding: 1em 2em
+  -webkit-transition: background-color
+a:hover
+  text-decoration: none
+.progress-bar
+  transition: none!important
+  -webkit-transition: none!important
+#loading, #loadingText
+  position: fixed
+  left: 50%
+  top: 50%
+  opacity: 1 !important
+#loading
+  margin: -35px 0 0 -35px
+#loadingText
+  pointer-events: all
+  margin: -0.5em 0 0 40px
+body:not(.loading) 
+  > #loading, > #loadingText
+    opacity: 0 !important
+    pointer-events: none
+body.loading
+  pointer-events: none
+  > *
+    opacity: .3 !important
+body > *
+  transition: opacity ease .5s
+
+#favs
+  min-height: 5em
+  li
+    position: relative
+    button
+      position: absolute
+      right: -0.8em
+      top: .5em
+#formLogin
+  max-width: 400px
+
+#filelist
+  padding-top: 30px
+#path
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  border-radius: 0
+  box-shadow: 0 0 20px black
+.well
+  padding: .3em
+body.drag_hover
+  background-color: #ccc
+
