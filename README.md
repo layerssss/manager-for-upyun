@@ -6,9 +6,9 @@ manager-for-uypun
 下载
 ------
 
-* [Mac](http://micyin.b0.upaiyun.com/manager-for-upyun-0.0.0/manager-for-upyun-osx.zip)
-* [Windows](http://micyin.b0.upaiyun.com/manager-for-upyun-0.0.0/manager-for-upyun-win32.zip)
-* Linux [ia32](http://micyin.b0.upaiyun.com/manager-for-upyun-0.0.0/manager-for-upyun-linux-ia32.zip) [x64](http://micyin.b0.upaiyun.com/manager-for-upyun-0.0.0/manager-for-upyun-linux-x64.zip)
+* [Mac](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.0-osx.zip)
+* [Windows](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.0-win32.zip)
+* Linux [ia32](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.0-linux-ia32.zip) [x64](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.0-linux-x64.zip)
 
 功能开发路线
 ------
