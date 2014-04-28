@@ -150,6 +150,7 @@ Messenger.options =
   $ document.createElement 'i'
     .addClass "fa fa-#{icon}"
 @shortOperation = (title, operation)=>
+  @shortOperationBusy = true
   $ '#loadingText'
     .text title||''
   $ 'body'
@@ -160,6 +161,7 @@ Messenger.options =
     .text '取消'
     .hide()
   operationDone = (e)=>
+    @shortOperationBusy = false
     $ 'body'
       .removeClass 'loading'
     if e
@@ -621,7 +623,7 @@ $ =>
     .messenger()
   @async.forever (doneForever)=>
       setTimeout =>
-          if @m_active
+          if @m_active && !@shortOperationBusy
             @refresh_filelist (e)=>
               if e
                 msg = Messenger().post
