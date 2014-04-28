@@ -95,8 +95,7 @@ catch
   '404 Not Found': '获取文件或目录不存在；上传文件或目录时上级目录不存在'
   '406 Not Acceptable(path)': '目录错误（创建目录时已存在同名文件；或上传文件时存在同名目录)'
   '503 System Error': '系统错误'
-@upyun_api = (opt, cb)=>
-  console.log "#{opt.method} #{opt.url}"
+@_upyun_api = (opt, cb)=>
   opt.headers?= {}
   if opt.data?
     opt.headers["Content-Length"] = opt.data.length
@@ -126,6 +125,11 @@ catch
   return =>
     req.abort()
     cb new Error '操作已取消'
+@upyun_api = (opt, cb)=>
+  start = Date.now()
+  @_upyun_api opt, (e, data)=>
+    console.log "#{opt.method} #{opt.url} done (+#{Date.now() - start}ms)"
+    cb e, data
 
 Messenger.options = 
   extraClasses: 'messenger-fixed messenger-on-bottom messenger-on-right'
@@ -252,6 +256,7 @@ Messenger.options =
           @upyun_find file.url + '/', (e, tmp)=>
             return doneEach e if e
             results.push item for item in tmp
+            results.push file
             doneEach null
         else
           results.push file
@@ -367,9 +372,10 @@ Messenger.options =
   $ '#login'
     .fadeIn()
 @refresh_filelist = (cb)=>
-  @upyun_readdir @m_path, (e, files)=>
+  cur_path = @m_path
+  @upyun_readdir cur_path, (e, files)=>
     return cb e if e
-    if @m_files != files
+    if @m_path == cur_path && @m_files != files
       $('#filelist tbody').empty()
       $('#filelist .preloader').remove()
       for file in @m_files = files
@@ -399,20 +405,53 @@ Messenger.options =
           .text @moment(file.mtime).format 'LLL'
         $ td = document.createElement 'td'
           .appendTo tr
-        $ document.createElement 'button'
-          .appendTo td
-          .addClass 'btn btn-danger btn-xs'
-          .data 'url', file.url + if file.isDirectory then '/' else '' 
-          .data 'filename', file.filename
-          .prepend @createIcon 'trash-o'
-          .click (ev)=>
-            url = $(ev.currentTarget).data('url')
-            filename = $(ev.currentTarget).data('filename')
-            @shortOperation "正在删除 #{filename}", (operationDone, $btnCancelDel)=>
-              $btnCancelDel.show().click @upyun_api 
-                method: "DELETE"
-                url: url
-                , operationDone
+        if file.isDirectory
+          $ document.createElement 'button'
+            .appendTo td
+            .addClass 'btn btn-danger btn-xs'
+            .data 'url', file.url + '/'
+            .data 'filename', file.filename
+            .prepend @createIcon 'trash-o'
+            .click (ev)=>
+              filename = $(ev.currentTarget).data 'filename'
+              url = $(ev.currentTarget).data 'url'
+              @shortOperation "正在列出目录 #{filename} 下的所有文件", (doneFind, $btnCancelFind)=>
+                $btnCancelFind.show().click => @upyun_find_abort()
+                @upyun_find url, (e, files)=>
+                  doneFind e
+                  unless e
+                    files_deleting = 0
+                    async.eachSeries files, (file, doneEach)=>
+                        files_deleting+= 1
+                        @shortOperation "正在删除(#{files_deleting}/#{files.length}) #{file.filename}", (operationDone, $btnCancelDel)=>
+                          $btnCancelDel.show().click @upyun_api 
+                            method: "DELETE"
+                            url: file.url
+                            , (e)=>
+                              operationDone e
+                              doneEach e
+                      , (e)=>
+                        unless e
+                          @shortOperation "正在删除 #{filename}", (operationDone, $btnCancelDel)=>
+                            $btnCancelDel.show().click @upyun_api 
+                              method: "DELETE"
+                              url: url
+                              , operationDone
+        else
+          $ document.createElement 'button'
+            .appendTo td
+            .addClass 'btn btn-danger btn-xs'
+            .data 'url', file.url
+            .data 'filename', file.filename
+            .prepend @createIcon 'trash-o'
+            .click (ev)=>
+              url = $(ev.currentTarget).data('url')
+              filename = $(ev.currentTarget).data('filename')
+              @shortOperation "正在删除 #{filename}", (operationDone, $btnCancelDel)=>
+                $btnCancelDel.show().click @upyun_api 
+                  method: "DELETE"
+                  url: url
+                  , operationDone
         if file.isDirectory
           $ document.createElement 'button'
             .appendTo td
@@ -438,6 +477,7 @@ Messenger.options =
                         $btnCancelTransfer.click =>
                           aborting() if aborting?
                         @async.eachSeries files, ((file, doneEach)=>
+                          return (_.defer => doneEach null) if file.isDirectory()
                           segs = file.url.substring(url.length).split '/'
                           segs = segs.map decodeURIComponent
                           destpath = @path.join savepath, @path.join.apply @path, segs
@@ -529,7 +569,7 @@ Messenger.options =
               @gui.Shell.openExternal url
 
       
-      cb null
+    cb null
 window.ondragover = window.ondrop = (ev)-> 
   ev.preventDefault()
   return false
@@ -561,9 +601,7 @@ $ =>
                       action: =>
                         msg.hide()
                 @jump_login()
-              setTimeout =>
-                  doneForever null
-                , 400
+              doneForever null
           else
             doneForever null
         , 100
