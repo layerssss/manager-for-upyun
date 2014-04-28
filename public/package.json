@@ -1,6 +1,7 @@
 {
   "name": "manager_for_upyun",
   "main": "index.html",
+  "version": "0.0.1",
   "window": {
     "icon": "app.ico",
     "toolbar": false,
