@@ -64,6 +64,8 @@ a:hover
     margin: 0 2px
   tbody
     tr
+      > td, >td i
+        transition: line-height ease .2s, opacity ease .2s, padding ease .2s
       &.filtered
         > td, >td i
           line-height: 0
@@ -71,7 +73,6 @@ a:hover
           padding-top: 0
           padding-bottom: 0
           border-top: none
-          transition: line-height ease .5s, opacity ease .5s, padding ease .5s
         .btn
           display: none
   #topbar
