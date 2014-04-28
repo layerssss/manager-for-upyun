@@ -24,7 +24,9 @@ title: 又拍云资源管理器
       .well
         %ul#favs.nav.nav-pills
 #filelist
-  %ol#path.breadcrumb
+  #topbar
+    %input#inputFilter.form-control{ type: :text, name: :filter, placeholder: '筛选列表' }
+    %ol#path.breadcrumb
   %table.table.table-hover
     %thead
       %th

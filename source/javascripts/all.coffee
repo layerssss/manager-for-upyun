@@ -128,7 +128,7 @@ catch
 @upyun_api = (opt, cb)=>
   start = Date.now()
   @_upyun_api opt, (e, data)=>
-    console.log "#{opt.method} #{opt.url} done (+#{Date.now() - start}ms)"
+    console?.log "#{opt.method} #{opt.url} done (+#{Date.now() - start}ms)"
     cb e, data
 
 Messenger.options = 
@@ -321,6 +321,8 @@ Messenger.options =
   $ document.createElement 'div'
     .addClass 'preloader'
     .appendTo '#filelist'
+  $ '#inputFilter'
+    .val ''
   $ '#login'
     .hide()
   $ '#filelist'
@@ -375,7 +377,7 @@ Messenger.options =
   cur_path = @m_path
   @upyun_readdir cur_path, (e, files)=>
     return cb e if e
-    if @m_path == cur_path && @m_files != files
+    if @m_path == cur_path && JSON.stringify(@m_files) != JSON.stringify(files)
       $('#filelist tbody').empty()
       $('#filelist .preloader').remove()
       for file in @m_files = files
@@ -663,9 +665,13 @@ $ =>
                       label: '确定'
                       action: =>
                         msg.hide()
-
-
-      # @async.eachSeries 
-      #   , (file, )
+  $ '#inputFilter'
+    .keydown =>
+      _.defer =>
+        val = String $('#inputFilter').val()
+        $ "#filelist tbody tr:contains(#{JSON.stringify val})"
+          .removeClass 'filtered'
+        $ "#filelist tbody tr:not(:contains(#{JSON.stringify val}))"
+          .addClass 'filtered'
         
 

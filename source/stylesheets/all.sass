@@ -54,15 +54,37 @@ body > *
     top: 10em
     left: 50%
     position: absolute
-
-
-#path
+  .btn
+    margin: 0 2px
+  tbody
+    tr
+      &.filtered
+        > td, >td i
+          line-height: 0
+          opacity: 0
+          padding: 0
+          border-top: none
+          transition: line-height ease .5s, opacity ease .5s, padding ease .5s
+        .btn
+          display: none
+#topbar
   position: fixed
   top: 0
   left: 0
   right: 0
   border-radius: 0
   box-shadow: 0 0 20px black
+  #inputFilter
+    position: absolute
+    right: 4px
+    top: 4px
+    transition: width ease .2s
+    height: 28px
+    width: 150px
+    &:focus,&:hover
+      width: 200px
+  > *
+    margin: 0
 .well
   padding: .3em
 body.drag_hover
