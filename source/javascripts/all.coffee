@@ -487,7 +487,7 @@ Messenger.options =
                         $btnCancelTransfer.click =>
                           aborting() if aborting?
                         @async.eachSeries files, ((file, doneEach)=>
-                          return (_.defer => doneEach null) if file.isDirectory()
+                          return (_.defer => doneEach null) if file.isDirectory
                           segs = file.url.substring(url.length).split '/'
                           segs = segs.map decodeURIComponent
                           destpath = @path.join savepath, @path.join.apply @path, segs
