@@ -16,7 +16,7 @@ a:hover
   position: fixed
   left: 50%
   top: 50%
-  opacity: 1 !important
+  opacity: 1
 #loading
   margin: -35px 0 0 -35px
 #loadingText
@@ -24,12 +24,12 @@ a:hover
   margin: -0.5em 0 0 40px
 body:not(.loading) 
   > #loading, > #loadingText
-    opacity: 0 !important
+    opacity: 0
     pointer-events: none
 body.loading
   pointer-events: none
   > *
-    opacity: .3 !important
+    opacity: .3
 body > *
   transition: opacity ease .5s
 
@@ -46,6 +46,16 @@ body > *
 
 #filelist
   padding-top: 30px
+  .preloader
+    background-image: image-url('712.GIF')
+    width: 64px
+    height: 64px
+    margin-left: -32px
+    top: 10em
+    left: 50%
+    position: absolute
+
+
 #path
   position: fixed
   top: 0

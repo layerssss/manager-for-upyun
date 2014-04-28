@@ -19,7 +19,7 @@ try
   @m_favs = JSON.parse(localStorage.favs)||{}
 catch
   @m_favs = {}
-@init_favs = =>
+@refresh_favs = =>
   $ '#favs'
     .empty()
   for k, fav of @m_favs
@@ -47,7 +47,7 @@ catch
         fav = $(ev.currentTarget).data 'fav'
         delete @m_favs["#{fav.username}@#{fav.bucket}"]
         localStorage.favs = JSON.stringify @m_favs
-        @init_favs()
+        @refresh_favs()
 @humanFileSize = (bytes, si) ->
   thresh = (if si then 1000 else 1024)
   return bytes + " B"  if bytes < thresh
@@ -309,219 +309,227 @@ Messenger.options =
       $(dlg).remove()
       cb val
     .trigger 'click'
-@refresh = (success)=>
-  @shortOperation "正在加载文件列表..", (doneFresh, $btnCancelRefresh)=>
-    $btnCancelRefresh.show().click @upyun_readdir @m_path, (e, files)=>
-      doneFresh e
-      unless e
-        $('#filelist tbody').empty()
-        for file in files
-          $ tr = document.createElement 'tr'
-            .appendTo '#filelist tbody'
-          $ td = document.createElement 'td'
-            .appendTo tr
-          if file.isDirectory
-            $ a = document.createElement 'a'
-              .appendTo td
-              .text file.filename
-              .prepend @createIcon 'folder'
-              .attr 'href', "#"
-              .data 'url', file.url + '/'
-              .click (ev)=> 
-                ev.preventDefault()
-                @m_path = $(ev.currentTarget).data('url')
-                refresh()
-          else
-            $ td
-              .text file.filename
-              .prepend @createIcon 'file'
-          $ document.createElement 'td'
-            .appendTo tr
-            .text if file.isDirectory then '' else @humanFileSize file.length
-          $ document.createElement 'td'
-            .appendTo tr
-            .text @moment(file.mtime).format 'LLL'
-          $ td = document.createElement 'td'
-            .appendTo tr
+@jump_path = (path)=>
+  @m_path = path
+  @m_active = true
+  @m_files = null
+  $ document.createElement 'div'
+    .addClass 'preloader'
+    .appendTo '#filelist'
+  $ '#login'
+    .hide()
+  $ '#filelist'
+    .fadeIn()
+  segs = $.makeArray(@m_path.match /\/[^\/]+/g).map (match)-> String(match).replace /^\//, ''
+  segs = segs.map decodeURIComponent
+  $ '#path'
+    .empty()
+  $ li = document.createElement 'li'
+    .appendTo '#path'
+  $ document.createElement 'a'
+    .appendTo li
+    .text @username
+    .prepend @createIcon 'user'
+    .attr 'href', '#'
+    .click (ev)=>
+      ev.preventDefault()
+      @jump_login()
+  $ li = document.createElement 'li'
+    .toggleClass 'active', !segs.length
+    .appendTo '#path'
+  $ document.createElement 'a'
+    .appendTo li
+    .text @bucket
+    .prepend @createIcon 'cloud'
+    .attr 'href', "http://#{bucket}.b0.upaiyun.com/"
+    .data 'url', '/'
+  for seg, i in segs
+    url = '/' + segs[0..i].map(encodeURIComponent).join('/') + '/'
+    $ li = document.createElement 'li'
+      .toggleClass 'active', i == segs.length - 1
+      .appendTo '#path'
+    $ document.createElement 'a'
+      .appendTo li
+      .text seg
+      .prepend @createIcon 'folder'
+      .attr 'href', "http://#{bucket}.b0.upaiyun.com#{url}"
+      .data 'url', url
+  $ '#path li:not(:first-child)>a'
+    .click (ev)=>
+      ev.preventDefault()
+      @jump_path $(ev.currentTarget).data 'url'
+
+@jump_login = =>
+  @m_path = '/'
+  @m_active = false
+  $ '#filelist'
+    .hide()
+  $ '#login'
+    .fadeIn()
+@refresh_filelist = (cb)=>
+  @upyun_readdir @m_path, (e, files)=>
+    return cb e if e
+    if @m_files != files
+      $('#filelist tbody').empty()
+      $('#filelist .preloader').remove()
+      for file in @m_files = files
+        $ tr = document.createElement 'tr'
+          .appendTo '#filelist tbody'
+        $ td = document.createElement 'td'
+          .appendTo tr
+        if file.isDirectory
+          $ a = document.createElement 'a'
+            .appendTo td
+            .text file.filename
+            .prepend @createIcon 'folder'
+            .attr 'href', "#"
+            .data 'url', file.url + '/'
+            .click (ev)=> 
+              ev.preventDefault()
+              @jump_path $(ev.currentTarget).data('url')
+        else
+          $ td
+            .text file.filename
+            .prepend @createIcon 'file'
+        $ document.createElement 'td'
+          .appendTo tr
+          .text if file.isDirectory then '' else @humanFileSize file.length
+        $ document.createElement 'td'
+          .appendTo tr
+          .text @moment(file.mtime).format 'LLL'
+        $ td = document.createElement 'td'
+          .appendTo tr
+        $ document.createElement 'button'
+          .appendTo td
+          .addClass 'btn btn-danger btn-xs'
+          .data 'url', file.url + if file.isDirectory then '/' else '' 
+          .data 'filename', file.filename
+          .prepend @createIcon 'trash-o'
+          .click (ev)=>
+            url = $(ev.currentTarget).data('url')
+            filename = $(ev.currentTarget).data('filename')
+            @shortOperation "正在删除 #{filename}", (operationDone, $btnCancelDel)=>
+              $btnCancelDel.show().click @upyun_api 
+                method: "DELETE"
+                url: url
+                , operationDone
+        if file.isDirectory
           $ document.createElement 'button'
             .appendTo td
-            .addClass 'btn btn-danger btn-xs'
-            .data 'url', file.url + if file.isDirectory then '/' else '' 
+            .addClass 'btn btn-info btn-xs'
+            .prepend @createIcon 'download'
+            .data 'url', file.url + '/'
             .data 'filename', file.filename
-            .prepend @createIcon 'trash-o'
             .click (ev)=>
-              url = $(ev.currentTarget).data('url')
-              filename = $(ev.currentTarget).data('filename')
-              @shortOperation "正在删除 #{filename}", (operationDone, $btnCancelDel)=>
-                $btnCancelDel.show().click @upyun_api 
-                  method: "DELETE"
-                  url: url
-                  , (e, data)=>
-                    operationDone e
-                    unless e
-                      @refresh() if @m_path = @path.dirname(url).replace /\/?$/, '/'
-          if file.isDirectory
-            $ document.createElement 'button'
-              .appendTo td
-              .addClass 'btn btn-info btn-xs'
-              .prepend @createIcon 'download'
-              .data 'url', file.url + '/'
-              .data 'filename', file.filename
-              .click (ev)=>
-                filename = $(ev.currentTarget).data 'filename'
-                url = $(ev.currentTarget).data 'url'
-                @shortOperation "正在列出目录 #{filename} 下的所有文件", (doneFind, $btnCancelFind)=>
-                  $btnCancelFind.show().click => @upyun_find_abort()
-                  @upyun_find url, (e, files)=>
-                    doneFind e
-                    unless e
-                      @nwdirectory (savepath)=>
-                        @taskOperation "正在下载目录 #{filename} ...", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
-                          total_files = files.length
-                          total_bytes = files.reduce ((a, b)-> a + b.length), 0
-                          current_files = 0
-                          current_bytes = 0
-                          aborting = null
-                          $btnCancelTransfer.click =>
-                            aborting() if aborting?
-                          @async.eachSeries files, ((file, doneEach)=>
-                            segs = file.url.substring(url.length).split '/'
-                            segs = segs.map decodeURIComponent
-                            destpath = @path.join savepath, @path.join.apply @path, segs
-                            @mkdirp @path.dirname(destpath), (e)=>
-                              return doneEach e if e
-                              stream = @fs.createWriteStream destpath
-                              stream.on 'error', doneEach
-                              stream.on 'open', =>
-                                current_files+= 1
-                                aborting = @upyun_api 
-                                  method: 'GET'
-                                  url: file.url
-                                  pipe: stream
-                                  onData: =>
-                                    progressTransfer (Math.floor 100 * (current_bytes + stream.bytesWritten) / total_bytes), "已下载：#{current_files} / #{total_files} (#{@humanFileSize current_bytes + stream.bytesWritten} / #{@humanFileSize total_bytes})"
-                                  , (e)=>
-                                    current_bytes+= file.length unless e
-                                    doneEach e
+              filename = $(ev.currentTarget).data 'filename'
+              url = $(ev.currentTarget).data 'url'
+              @shortOperation "正在列出目录 #{filename} 下的所有文件", (doneFind, $btnCancelFind)=>
+                $btnCancelFind.show().click => @upyun_find_abort()
+                @upyun_find url, (e, files)=>
+                  doneFind e
+                  unless e
+                    @nwdirectory (savepath)=>
+                      @taskOperation "正在下载目录 #{filename} ...", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
+                        total_files = files.length
+                        total_bytes = files.reduce ((a, b)-> a + b.length), 0
+                        current_files = 0
+                        current_bytes = 0
+                        aborting = null
+                        $btnCancelTransfer.click =>
+                          aborting() if aborting?
+                        @async.eachSeries files, ((file, doneEach)=>
+                          segs = file.url.substring(url.length).split '/'
+                          segs = segs.map decodeURIComponent
+                          destpath = @path.join savepath, @path.join.apply @path, segs
+                          @mkdirp @path.dirname(destpath), (e)=>
+                            return doneEach e if e
+                            stream = @fs.createWriteStream destpath
+                            stream.on 'error', doneEach
+                            stream.on 'open', =>
+                              current_files+= 1
+                              aborting = @upyun_api 
+                                method: 'GET'
+                                url: file.url
+                                pipe: stream
+                                onData: =>
+                                  progressTransfer (Math.floor 100 * (current_bytes + stream.bytesWritten) / total_bytes), "已下载：#{current_files} / #{total_files} (#{@humanFileSize current_bytes + stream.bytesWritten} / #{@humanFileSize total_bytes})"
+                                , (e)=>
+                                  current_bytes+= file.length unless e
+                                  doneEach e
 
-                            ), (e)=> 
-                              aborting = null
-                              doneTransfer e
-                              unless e
-                                msg = Messenger().post
-                                  message: "目录 #{filename} 下载完毕"
-                                  actions: 
-                                    ok:
-                                      label: '确定'
-                                      action: =>
-                                        msg.hide()
-                                    open: 
-                                      label: "打开"
-                                      action: => 
-                                        msg.hide()
-                                        @gui.Shell.openItem savepath
-          else
-            $ document.createElement 'button'
-              .appendTo td
-              .addClass 'btn btn-info btn-xs'
-              .prepend @createIcon 'download'
-              .data 'url', file.url
-              .data 'filename', file.filename
-              .data 'length', file.length
-              .click (ev)=>
-                filename = $(ev.currentTarget).data 'filename'
-                url = $(ev.currentTarget).data 'url'
-                length = $(ev.currentTarget).data 'length'
-                @nwsaveas filename, (savepath)=>
-                  @taskOperation "正在下载文件 #{filename} ..", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
-                    aborting = null
-                    $btnCancelTransfer.click =>
-                      aborting() if aborting?
-                    stream = @fs.createWriteStream savepath
-                    stream.on 'error', doneTransfer
-                    stream.on 'open', =>
-                      aborting = @upyun_api 
-                        method: "GET"
-                        url: url
-                        pipe: stream
-                        onData: =>
-                          progressTransfer (Math.floor 100 * stream.bytesWritten / length), "#{@humanFileSize stream.bytesWritten} / #{@humanFileSize length}"
-                        , (e, data)=>
-                          doneTransfer e
-                          unless e
-                            msg = Messenger().post
-                              message: "文件 #{filename} 下载完毕"
-                              actions: 
-                                ok:
-                                  label: '确定'
-                                  action: =>
-                                    msg.hide()
-                                open: 
-                                  label: "打开"
-                                  action: => 
-                                    msg.hide()
-                                    @gui.Shell.openItem savepath
-                                showItemInFolder: 
-                                  label: "打开目录"
-                                  action: => 
-                                    msg.hide()
-                                    @gui.Shell.showItemInFolder savepath
-            $ document.createElement 'button'
-              .appendTo td
-              .addClass 'btn btn-info btn-xs'
-              .prepend @createIcon 'globe'
-              .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
-              .click (ev)=>
-                url = $(ev.currentTarget).data 'url'
-                @gui.Shell.openExternal url
+                          ), (e)=> 
+                            aborting = null
+                            doneTransfer e
+                            unless e
+                              msg = Messenger().post
+                                message: "目录 #{filename} 下载完毕"
+                                actions: 
+                                  ok:
+                                    label: '确定'
+                                    action: =>
+                                      msg.hide()
+                                  open: 
+                                    label: "打开"
+                                    action: => 
+                                      msg.hide()
+                                      @gui.Shell.openItem savepath
+        else
+          $ document.createElement 'button'
+            .appendTo td
+            .addClass 'btn btn-info btn-xs'
+            .prepend @createIcon 'download'
+            .data 'url', file.url
+            .data 'filename', file.filename
+            .data 'length', file.length
+            .click (ev)=>
+              filename = $(ev.currentTarget).data 'filename'
+              url = $(ev.currentTarget).data 'url'
+              length = $(ev.currentTarget).data 'length'
+              @nwsaveas filename, (savepath)=>
+                @taskOperation "正在下载文件 #{filename} ..", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
+                  aborting = null
+                  $btnCancelTransfer.click =>
+                    aborting() if aborting?
+                  stream = @fs.createWriteStream savepath
+                  stream.on 'error', doneTransfer
+                  stream.on 'open', =>
+                    aborting = @upyun_api 
+                      method: "GET"
+                      url: url
+                      pipe: stream
+                      onData: =>
+                        progressTransfer (Math.floor 100 * stream.bytesWritten / length), "#{@humanFileSize stream.bytesWritten} / #{@humanFileSize length}"
+                      , (e, data)=>
+                        doneTransfer e
+                        unless e
+                          msg = Messenger().post
+                            message: "文件 #{filename} 下载完毕"
+                            actions: 
+                              ok:
+                                label: '确定'
+                                action: =>
+                                  msg.hide()
+                              open: 
+                                label: "打开"
+                                action: => 
+                                  msg.hide()
+                                  @gui.Shell.openItem savepath
+                              showItemInFolder: 
+                                label: "打开目录"
+                                action: => 
+                                  msg.hide()
+                                  @gui.Shell.showItemInFolder savepath
+          $ document.createElement 'button'
+            .appendTo td
+            .addClass 'btn btn-info btn-xs'
+            .prepend @createIcon 'globe'
+            .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
+            .click (ev)=>
+              url = $(ev.currentTarget).data 'url'
+              @gui.Shell.openExternal url
 
-        segs = $.makeArray(@m_path.match /\/[^\/]+/g).map (match)-> String(match).replace /^\//, ''
-        segs = segs.map decodeURIComponent
-        $ '#path'
-          .empty()
-        $ li = document.createElement 'li'
-          .appendTo '#path'
-        $ document.createElement 'a'
-          .appendTo li
-          .text @username
-          .prepend @createIcon 'user'
-          .attr 'href', '#'
-          .click (ev)=>
-            ev.preventDefault()
-            $ '#filelist'
-              .hide()
-            $ '#login'
-              .css opacity: 0
-              .show()
-            _.defer =>
-              $ '#login'
-                .css opacity: 1
-        $ li = document.createElement 'li'
-          .toggleClass 'active', !segs.length
-          .appendTo '#path'
-        $ document.createElement 'a'
-          .appendTo li
-          .text @bucket
-          .prepend @createIcon 'cloud'
-          .attr 'href', "http://#{bucket}.b0.upaiyun.com/"
-          .data 'url', '/'
-        for seg, i in segs
-          url = '/' + segs[0..i].map(encodeURIComponent).join('/') + '/'
-          $ li = document.createElement 'li'
-            .toggleClass 'active', i == segs.length - 1
-            .appendTo '#path'
-          $ document.createElement 'a'
-            .appendTo li
-            .text seg
-            .prepend @createIcon 'folder'
-            .attr 'href', "http://#{bucket}.b0.upaiyun.com#{url}"
-            .data 'url', url
-        $ '#path li:not(:first-child)>a'
-          .click (ev)=>
-            ev.preventDefault()
-            @m_path = $(ev.currentTarget).data 'url'
-            @refresh()
-        success?()
+      
+      cb null
 window.ondragover = window.ondrop = (ev)-> 
   ev.preventDefault()
   return false
@@ -539,27 +547,45 @@ $ =>
   @messengerTasks = $ document.createElement 'ul'
     .appendTo 'body'
     .messenger()
-  @init_favs()
+  @async.forever (doneForever)=>
+      setTimeout =>
+          if @m_active
+            @refresh_filelist (e)=>
+              if e
+                msg = Messenger().post
+                  message: e.message
+                  type: 'error'
+                  actions: 
+                    ok:
+                      label: '确定'
+                      action: =>
+                        msg.hide()
+                @jump_login()
+              setTimeout =>
+                  doneForever null
+                , 400
+          else
+            doneForever null
+        , 100
+    , (e)=>
+      throw e
+
+
+
+  @refresh_favs()
   $ '#btnAddFav'
     .click =>
       fav = $('#formLogin').serializeObject()
       @m_favs["#{fav.username}@#{fav.bucket}"] = fav
       localStorage.favs = JSON.stringify @m_favs
-      @init_favs()
+      @refresh_favs()
   $ '#formLogin'
     .submit (ev)=>
       ev.preventDefault()
       @[k] = v for k, v of $(ev.currentTarget).serializeObject()
-      @m_path = '/'
-      @refresh =>
-        $ '#login'
-          .hide()
-        $ '#filelist'
-          .css opacity: 0
-          .show()
-        _.defer =>
-          $ '#filelist'
-            .css opacity: 1
+      $ '#filelist tbody'
+        .empty()
+      @jump_path '/'
   $ '#filelist'
     .hide()
   $ window
@@ -599,11 +625,6 @@ $ =>
                       label: '确定'
                       action: =>
                         msg.hide()
-                    refresh:
-                      label: '刷新'
-                      action: =>
-                        msg.hide()
-                        @refresh()
 
 
       # @async.eachSeries 
