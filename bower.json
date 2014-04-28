@@ -18,6 +18,7 @@
     "jquery-serialize-object": "macek/jquery-serialize-object#~2.2.0",
     "underscore": "~1.6.0",
     "underscore.string": "~2.3.3",
-    "messenger": "~1.4.1"
+    "messenger": "~1.4.1",
+    "ace-builds": "~1.1.3"
   }
 }

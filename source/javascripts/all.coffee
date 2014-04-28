@@ -314,6 +314,17 @@ Messenger.options =
       $(dlg).remove()
       cb val
     .trigger 'click'
+@jump_login = =>
+  @m_path = '/'
+  @m_active = false
+  @refresh_favs()
+  $ '#filelist'
+    .hide()
+  $ '#login'
+    .fadeIn()
+
+@jump_filelist = =>
+  @jump_path '/'  
 @jump_path = (path)=>
   @m_path = path
   @m_active = true
@@ -366,13 +377,6 @@ Messenger.options =
       ev.preventDefault()
       @jump_path $(ev.currentTarget).data 'url'
 
-@jump_login = =>
-  @m_path = '/'
-  @m_active = false
-  $ '#filelist'
-    .hide()
-  $ '#login'
-    .fadeIn()
 @refresh_filelist = (cb)=>
   cur_path = @m_path
   @upyun_readdir cur_path, (e, files)=>
@@ -569,8 +573,6 @@ Messenger.options =
             .click (ev)=>
               url = $(ev.currentTarget).data 'url'
               @gui.Shell.openExternal url
-
-      
     cb null
 window.ondragover = window.ondrop = (ev)-> 
   ev.preventDefault()
@@ -612,7 +614,6 @@ $ =>
 
 
 
-  @refresh_favs()
   $ '#btnAddFav'
     .click =>
       fav = $('#formLogin').serializeObject()
@@ -625,9 +626,7 @@ $ =>
       @[k] = v for k, v of $(ev.currentTarget).serializeObject()
       $ '#filelist tbody'
         .empty()
-      @jump_path '/'
-  $ '#filelist'
-    .hide()
+      @jump_filelist()
   $ window
     .on 'dragover', -> $('body').addClass 'drag_hover'
     .on 'dragleave', -> $('body').removeClass 'drag_hover'
@@ -673,5 +672,9 @@ $ =>
           .removeClass 'filtered'
         $ "#filelist tbody tr:not(:contains(#{JSON.stringify val}))"
           .addClass 'filtered'
+  for m in location.search.match /([^\&?]+)\=([^\&]+)/g
+    m = m.split '='
+    @[decodeURIComponent m[0]] = decodeURIComponent m[1]
+  (@["jump_#{@default_action}"]||@jump_login)()
         
 
