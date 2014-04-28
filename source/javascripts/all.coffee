@@ -597,6 +597,7 @@ Messenger.options =
     .hide()
   $ '#editor'
     .show()
+  @document.title = @editor_filename
   @editor = @ace.edit $('#editor .editor')[0]
   $('#btnReloadEditor').click()
 
