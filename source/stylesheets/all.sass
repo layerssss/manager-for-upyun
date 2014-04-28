@@ -5,8 +5,21 @@
 // = require messenger/build/css/messenger-theme-future
 // = require font-awesome
 body
-  padding: 1em 2em
   -webkit-transition: background-color
+  &.drag_hover
+    background-color: #ccc
+  &:not(.loading) 
+    > #loading, > #loadingText
+      opacity: 0
+      pointer-events: none
+  &.loading
+    pointer-events: none
+    > *
+      opacity: .3
+  > *
+    transition: opacity ease .5s
+.well
+  padding: .3em
 a:hover
   text-decoration: none
 .progress-bar
@@ -22,30 +35,23 @@ a:hover
 #loadingText
   pointer-events: all
   margin: -0.5em 0 0 40px
-body:not(.loading) 
-  > #loading, > #loadingText
-    opacity: 0
-    pointer-events: none
-body.loading
-  pointer-events: none
-  > *
-    opacity: .3
-body > *
-  transition: opacity ease .5s
 
-#favs
-  min-height: 5em
-  li
-    position: relative
-    button
-      position: absolute
-      right: -0.8em
-      top: .5em
-#formLogin
-  max-width: 400px
+#login
+  padding: 1em 2em
+  #favs
+    min-height: 5em
+    li
+      position: relative
+      button
+        position: absolute
+        right: -0.8em
+        top: .5em
+  #formLogin
+    max-width: 400px
 
 #filelist
-  padding-top: 30px
+  padding: 3em 2em 0 2em
+
   .preloader
     background-image: image-url('712.GIF')
     width: 64px
@@ -68,26 +74,33 @@ body > *
           transition: line-height ease .5s, opacity ease .5s, padding ease .5s
         .btn
           display: none
-#topbar
-  position: fixed
-  top: 0
-  left: 0
-  right: 0
-  border-radius: 0
-  box-shadow: 0 0 20px black
-  #inputFilter
+  #topbar
+    position: fixed
+    top: 0
+    left: 0
+    right: 0
+    border-radius: 0
+    box-shadow: 0 0 20px black
+    #inputFilter
+      position: absolute
+      right: 4px
+      top: 4px
+      transition: width ease .2s
+      height: 28px
+      width: 150px
+      &:focus,&:hover
+        width: 200px
+    > *
+      margin: 0
+#editor
+  .navbar
+    border-top: none
+    border-left: none
+    border-right: none
+    border-radius: 0
+  .editor
     position: absolute
-    right: 4px
-    top: 4px
-    transition: width ease .2s
-    height: 28px
-    width: 150px
-    &:focus,&:hover
-      width: 200px
-  > *
-    margin: 0
-.well
-  padding: .3em
-body.drag_hover
-  background-color: #ccc
-
+    top: 50px
+    left: 0px
+    right: 0px
+    bottom: 0px

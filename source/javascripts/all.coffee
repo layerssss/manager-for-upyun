@@ -5,6 +5,7 @@
 # = require underscore.string/dist/underscore.string.min
 # = require messenger/build/js/messenger
 # = require messenger/build/js/messenger-theme-future
+# = require ace-builds/src-noconflict/ace.js
 if @require?
   @request = @require 'request'
   @moment = @require 'moment'
@@ -78,6 +79,7 @@ catch
   bytes.toFixed(1) + " " + units[u]
 @upyun_messages = 
   '200 OK': '操作成功'
+  '404': '找不到文件'
   '400 Bad Request': '错误请求(如 URL 缺少空间名)'
   '401 Unauthorized': '访问未授权'
   '401 Sign error': '签名错误(操作员和密码,或签名格式错误)'
@@ -113,11 +115,13 @@ catch
       if res.statusCode == 200
         cb null, data
       else
-        statusMatch = res.body.match(/\<h\d\>\d+\s(.+)\<\/\s*h\d\>/)
-        if status = statusMatch?[1]
-          status = "#{res.statusCode} #{status}"
-        else
-          status = res.body
+        status = String res.statusCode
+        if res.body
+          statusMatch = res.body.match(/\<h\d\>\d+\s(.+)\<\/\s*h\d\>/)
+          if status = statusMatch?[1]
+            status = "#{res.statusCode} #{status}"
+          else
+            status = res.body
         status = @upyun_messages[status]||status
         cb new Error status
   req.pipe opt.pipe if opt.pipe
@@ -318,7 +322,7 @@ Messenger.options =
   @m_path = '/'
   @m_active = false
   @refresh_favs()
-  $ '#filelist'
+  $ '#filelist, #editor'
     .hide()
   $ '#login'
     .fadeIn()
@@ -334,7 +338,7 @@ Messenger.options =
     .appendTo '#filelist'
   $ '#inputFilter'
     .val ''
-  $ '#login'
+  $ '#login, #editor'
     .hide()
   $ '#filelist'
     .fadeIn()
@@ -573,7 +577,30 @@ Messenger.options =
             .click (ev)=>
               url = $(ev.currentTarget).data 'url'
               @gui.Shell.openExternal url
+          $ document.createElement 'button'
+            .appendTo td
+            .addClass 'btn btn-info btn-xs'
+            .prepend @createIcon 'edit'
+            .data 'url', file.url
+            .data 'filename', file.filename
+            .click (ev)=>
+              @open '?' + $.param
+                username: @username
+                password: @password
+                bucket: @bucket
+                default_action: 'editor'
+                editor_url: $(ev.currentTarget).data 'url'
+                editor_filename: $(ev.currentTarget).data 'filename'
     cb null
+@jump_editor = =>
+  $ '#login, #filelist'
+    .hide()
+  $ '#editor'
+    .show()
+  @editor = @ace.edit $('#editor .editor')[0]
+  $('#btnReloadEditor').click()
+
+
 window.ondragover = window.ondrop = (ev)-> 
   ev.preventDefault()
   return false
@@ -672,7 +699,31 @@ $ =>
           .removeClass 'filtered'
         $ "#filelist tbody tr:not(:contains(#{JSON.stringify val}))"
           .addClass 'filtered'
-  for m in location.search.match /([^\&?]+)\=([^\&]+)/g
+  $ '#btnReloadEditor'
+    .click (ev)=>
+      ev.preventDefault()
+      @shortOperation "正在加载文件 #{editor_filename} ...", (doneReloading, $btnCancelReloading)=>
+        $btnCancelReloading.click @upyun_api 
+          url: @editor_url
+          method: 'GET'
+          , (e, data)=>
+            if e
+              data = '' 
+            else
+              data = data.toString 'utf8'
+            doneReloading null
+            unless e
+              @editor.setValue data
+  $ '#btnSaveEditor'
+    .click (ev)=>
+      ev.preventDefault()
+      @shortOperation "正在保存文件 #{editor_filename} ...", (doneSaving, $btnCancelSaving)=>
+        $btnCancelSaving.click @upyun_api 
+            url: @editor_url
+            method: 'PUT'
+            data: new Buffer @editor.getValue(), 'utf8'
+          , doneSaving
+  for m in location.search.match(/([^\&?]+)\=([^\&]+)/g)||[]
     m = m.split '='
     @[decodeURIComponent m[0]] = decodeURIComponent m[1]
   (@["jump_#{@default_action}"]||@jump_login)()
