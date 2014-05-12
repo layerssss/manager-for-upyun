@@ -1,9 +1,18 @@
-# !/bin/bash -e
-middleman build
+#!/bin/bash -e
+npm install
+bower install
+bundle install
+bundle exec middleman build
 rm -Rf nodebob/app/*
-mv build/* nodebob/app
-cp -Rf public/* nodebob/app
-VERSION=`node -e "console.log(require('./public/package.json').version);"`
+cp -Rf build/* nodebob/app
+cp -Rf node_modules nodebob/app
+VERSION=`node -e "console.log(require('./package.json').version);"`
+node <<"EOF"
+var pkg = require('./package.json'); 
+pkg.main = 'index.html'; 
+pkg.window.toolbar = false; 
+require('fs').writeFileSync('nodebob/app/package.json', JSON.stringify(pkg), 'utf8');
+EOF
 cd nodebob
 rm -Rf release.* manager-for-upyun-*
 ./build.linux.sh

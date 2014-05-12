@@ -18,5 +18,5 @@
 .DS_Store
 
 manager.sublime-workspace
-public/node_modules
+node_modules
 bower_components/

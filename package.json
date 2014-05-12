@@ -1,10 +1,11 @@
 {
   "name": "manager_for_upyun",
-  "main": "index.html",
+  "main": "http://localhost:4567",
+  "node-remote": "http://localhost:4567",
   "version": "0.0.3",
   "window": {
     "icon": "app.ico",
-    "toolbar": false,
+    "toolbar": true,
     "width": 1000,
     "height": 500
   },
