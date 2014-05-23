@@ -80,17 +80,21 @@ a:hover
     top: 0
     left: 0
     right: 0
-    border-radius: 0
     box-shadow: 0 0 20px black
-    #inputFilter
+    > ol
+      border-radius: 0
+
+    #toolbar
       position: absolute
-      right: 4px
+      right: 3px
       top: 4px
-      transition: width ease .2s
-      height: 28px
-      width: 150px
-      &:focus,&:hover
-        width: 200px
+      #inputFilter
+        display: inline
+        transition: width ease .2s
+        height: 28px
+        width: 150px
+        &:focus,&:hover
+          width: 200px
     > *
       margin: 0
 #editor

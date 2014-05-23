@@ -1,6 +1,7 @@
 # = require_tree .
 # = require jquery
 # = require jquery-serialize-object
+# = require bootstrap
 # = require underscore
 # = require underscore.string/dist/underscore.string.min
 # = require messenger/build/js/messenger
@@ -153,6 +154,7 @@ Messenger.options =
   @shortOperationBusy = true
   $ '#loadingText'
     .text title||''
+    .append '<br />'
   $ 'body'
     .addClass 'loading'
   $ btnCancel = document.createElement 'button'
@@ -299,8 +301,91 @@ Messenger.options =
             doneEach e
     , cb
   return aborting
+@action_downloadFolder = (filename, url)=>
+  unless filename || filename = url.match(/([^\/]+)\/$/)?[1]
+    filename = @bucket
+    
+  @shortOperation "正在列出目录 #{filename} 下的所有文件", (doneFind, $btnCancelFind)=>
+    $btnCancelFind.show().click => @upyun_find_abort()
+    @upyun_find url, (e, files)=>
+      doneFind e
+      unless e
+        @nw_directory (savepath)=>
+          @taskOperation "正在下载目录 #{filename} ...", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
+            total_files = files.length
+            total_bytes = files.reduce ((a, b)-> a + b.length), 0
+            current_files = 0
+            current_bytes = 0
+            aborting = null
+            $btnCancelTransfer.click =>
+              aborting() if aborting?
+            @async.eachSeries files, ((file, doneEach)=>
+              return (_.defer => doneEach null) if file.isDirectory
+              segs = file.url.substring(url.length).split '/'
+              segs = segs.map decodeURIComponent
+              destpath = @path.join savepath, filename, @path.join.apply @path, segs
+              @mkdirp @path.dirname(destpath), (e)=>
+                return doneEach e if e
+                stream = @fs.createWriteStream destpath
+                stream.on 'error', doneEach
+                stream.on 'open', =>
+                  current_files+= 1
+                  aborting = @upyun_api 
+                    method: 'GET'
+                    url: file.url
+                    pipe: stream
+                    onData: =>
+                      progressTransfer (Math.floor 100 * (current_bytes + stream.bytesWritten) / total_bytes), "已下载：#{current_files} / #{total_files} (#{@humanFileSize current_bytes + stream.bytesWritten} / #{@humanFileSize total_bytes})"
+                    , (e)=>
+                      current_bytes+= file.length unless e
+                      doneEach e
 
-@nwsaveas = (filename, cb)=>
+              ), (e)=> 
+                aborting = null
+                doneTransfer e
+                unless e
+                  msg = Messenger().post
+                    message: "目录 #{filename} 下载完毕"
+                    actions: 
+                      ok:
+                        label: '确定'
+                        action: =>
+                          msg.hide()
+                      open: 
+                        label: "打开"
+                        action: => 
+                          msg.hide()
+                          @gui.Shell.openItem savepath
+@action_uploadFile = (filepath, filename, destpath)=>
+  @taskOperation "正在上传 #{filename}", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
+    files = []
+    loadfileSync = (file)=>
+      stat = @fs.statSync(file.path)
+      if stat.isFile()
+        file.length = stat.size
+        files.push file 
+      if stat.isDirectory()
+        for filename in @fs.readdirSync file.path
+          loadfileSync 
+            path: @path.join(file.path, filename)
+            url: file.url + '/' + encodeURIComponent filename
+    try
+      loadfileSync path: filepath, url: ''
+    catch e
+      return doneTransfer e if e
+    $btnCancelTransfer.show().click @uypun_upload destpath, files, (status)=>
+        progressTransfer (Math.floor 100 * status.current_bytes / status.total_bytes), "已上传：#{status.current_files} / #{status.total_files} (#{@humanFileSize status.current_bytes} / #{@humanFileSize status.total_bytes})"
+      , (e)=>
+        doneTransfer e
+        unless e
+          msg = Messenger().post
+            message: "文件 #{filename} 上传完毕"
+            actions: 
+              ok:
+                label: '确定'
+                action: =>
+                  msg.hide()
+@nw_saveas = (filename, cb)=>
   $ dlg = document.createElement 'input'
     .appendTo 'body'
     .css position: 'absolute', top: - 50
@@ -310,7 +395,7 @@ Messenger.options =
       $(dlg).remove()
       cb val
     .trigger 'click'
-@nwdirectory = (cb)=>
+@nw_directory = (cb)=>
   $ dlg = document.createElement 'input'
     .appendTo 'body'
     .css position: 'absolute', top: - 50
@@ -320,6 +405,17 @@ Messenger.options =
       $(dlg).remove()
       cb val
     .trigger 'click'
+@nw_selectfiles = (cb)=>
+  $ dlg = document.createElement 'input'
+    .appendTo 'body'
+    .css position: 'absolute', top: - 50
+    .attr type: 'file', multiple: true
+    .on 'change', =>
+      val = $(dlg).val()
+      $(dlg).remove()
+      cb val.split ';'
+    .trigger 'click'
+
 @jump_login = =>
   @m_path = '/'
   @m_active = false
@@ -472,59 +568,7 @@ Messenger.options =
             .data 'url', file.url + '/'
             .data 'filename', file.filename
             .click (ev)=>
-              filename = $(ev.currentTarget).data 'filename'
-              url = $(ev.currentTarget).data 'url'
-              @shortOperation "正在列出目录 #{filename} 下的所有文件", (doneFind, $btnCancelFind)=>
-                $btnCancelFind.show().click => @upyun_find_abort()
-                @upyun_find url, (e, files)=>
-                  doneFind e
-                  unless e
-                    @nwdirectory (savepath)=>
-                      @taskOperation "正在下载目录 #{filename} ...", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
-                        total_files = files.length
-                        total_bytes = files.reduce ((a, b)-> a + b.length), 0
-                        current_files = 0
-                        current_bytes = 0
-                        aborting = null
-                        $btnCancelTransfer.click =>
-                          aborting() if aborting?
-                        @async.eachSeries files, ((file, doneEach)=>
-                          return (_.defer => doneEach null) if file.isDirectory
-                          segs = file.url.substring(url.length).split '/'
-                          segs = segs.map decodeURIComponent
-                          destpath = @path.join savepath, @path.join.apply @path, segs
-                          @mkdirp @path.dirname(destpath), (e)=>
-                            return doneEach e if e
-                            stream = @fs.createWriteStream destpath
-                            stream.on 'error', doneEach
-                            stream.on 'open', =>
-                              current_files+= 1
-                              aborting = @upyun_api 
-                                method: 'GET'
-                                url: file.url
-                                pipe: stream
-                                onData: =>
-                                  progressTransfer (Math.floor 100 * (current_bytes + stream.bytesWritten) / total_bytes), "已下载：#{current_files} / #{total_files} (#{@humanFileSize current_bytes + stream.bytesWritten} / #{@humanFileSize total_bytes})"
-                                , (e)=>
-                                  current_bytes+= file.length unless e
-                                  doneEach e
-
-                          ), (e)=> 
-                            aborting = null
-                            doneTransfer e
-                            unless e
-                              msg = Messenger().post
-                                message: "目录 #{filename} 下载完毕"
-                                actions: 
-                                  ok:
-                                    label: '确定'
-                                    action: =>
-                                      msg.hide()
-                                  open: 
-                                    label: "打开"
-                                    action: => 
-                                      msg.hide()
-                                      @gui.Shell.openItem savepath
+              @action_downloadFolder $(ev.currentTarget).data('filename'), $(ev.currentTarget).data('url')
         else
           $ document.createElement 'button'
             .appendTo td
@@ -537,7 +581,7 @@ Messenger.options =
               filename = $(ev.currentTarget).data 'filename'
               url = $(ev.currentTarget).data 'url'
               length = $(ev.currentTarget).data 'length'
-              @nwsaveas filename, (savepath)=>
+              @nw_saveas filename, (savepath)=>
                 @taskOperation "正在下载文件 #{filename} ..", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
                   aborting = null
                   $btnCancelTransfer.click =>
@@ -622,23 +666,21 @@ $ =>
     .appendTo 'body'
     .messenger()
   @async.forever (doneForever)=>
-      setTimeout =>
-          if @m_active && !@shortOperationBusy
-            @refresh_filelist (e)=>
-              if e
-                msg = Messenger().post
-                  message: e.message
-                  type: 'error'
-                  actions: 
-                    ok:
-                      label: '确定'
-                      action: =>
-                        msg.hide()
-                @jump_login()
-              doneForever null
-          else
-            doneForever null
-        , 100
+      if @m_active && !@shortOperationBusy
+        @refresh_filelist (e)=>
+          if e
+            msg = Messenger().post
+              message: e.message
+              type: 'error'
+              actions: 
+                ok:
+                  label: '确定'
+                  action: =>
+                    msg.hide()
+            @jump_login()
+          setTimeout (=>doneForever null), 1000
+      else
+        setTimeout (=>doneForever null), 100
     , (e)=>
       throw e
 
@@ -664,36 +706,8 @@ $ =>
     .on 'drop', (ev)=> 
       $('body').removeClass 'drag_hover'
       ev.preventDefault()
-      for transferFile in ev.originalEvent.dataTransfer.files
-        name = transferFile.name
-        @taskOperation "正在上传 #{transferFile.name}", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
-          files = []
-          loadfileSync = (file)=>
-            stat = @fs.statSync(file.path)
-            if stat.isFile()
-              file.length = stat.size
-              files.push file 
-            if stat.isDirectory()
-              for filename in @fs.readdirSync file.path
-                loadfileSync 
-                  path: @path.join(file.path, filename)
-                  url: file.url + '/' + encodeURIComponent filename
-          try
-            loadfileSync path: transferFile.path, url: encodeURIComponent transferFile.name
-          catch e
-            return doneTransfer e if e
-          $btnCancelTransfer.show().click @uypun_upload @m_path, files, (status)=>
-              progressTransfer (Math.floor 100 * status.current_bytes / status.total_bytes), "已上传：#{status.current_files} / #{status.total_files} (#{@humanFileSize status.current_bytes} / #{@humanFileSize status.total_bytes})"
-            , (e)=>
-              doneTransfer e
-              unless e
-                msg = Messenger().post
-                  message: "文件 #{name} 上传完毕"
-                  actions: 
-                    ok:
-                      label: '确定'
-                      action: =>
-                        msg.hide()
+      for file in ev.originalEvent.dataTransfer.files
+        @action_uploadFile file.path, file.name, "#{@m_path}#{encodeURIComponent file.name}"
   $ '#inputFilter'
     .keydown =>
       _.defer =>
@@ -702,6 +716,19 @@ $ =>
           .removeClass 'filtered'
         $ "#filelist tbody tr:not(:contains(#{JSON.stringify val}))"
           .addClass 'filtered'
+  $ '#btnDownloadFolder'
+    .click =>
+      @action_downloadFolder null, @m_path
+  $ '#btnUploadFiles'
+    .click =>
+      @nw_selectfiles (files)=>
+        for filepath in files
+          filename = @path.basename filepath
+          @action_uploadFile filepath, filename, "#{@m_path}#{encodeURIComponent filename}"
+  $ '#btnUploadFolder'
+    .click =>
+      @nw_directory (dirpath)=>
+        @action_uploadFile dirpath, @path.basename(dirpath), @m_path
   $ '#btnReloadEditor'
     .click (ev)=>
       ev.preventDefault()

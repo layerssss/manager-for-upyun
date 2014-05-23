@@ -25,7 +25,23 @@ title: 又拍云资源管理器
         %ul#favs.nav.nav-pills
 #filelist
   #topbar
-    %input#inputFilter.form-control{ type: :text, name: :filter, placeholder: '筛选列表' }
+    #toolbar
+      .btn-group
+        %button.btn.btn-sm.btn-info.dropdown-toggle{ data: { toggle: :dropdown } }
+          %i.fa.fa-cloud-upload
+          %span.caret
+        %ul.dropdown-menu
+          %li
+            %a#btnUploadFiles{ href: '#' }
+              %i.fa.fa-file
+              文件
+          %li
+            %a#btnUploadFolder{ href: '#' }
+              %i.fa.fa-folder
+              整个目录
+      %button.btn.btn-sm.btn-info#btnDownloadFolder
+        %i.fa.fa-download
+      %input#inputFilter.form-control{ type: :text, name: :filter, placeholder: '筛选列表' }
     %ol#path.breadcrumb
   %table.table.table-hover
     %thead
