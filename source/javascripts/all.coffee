@@ -378,6 +378,7 @@ Messenger.options =
       , (e)=>
         doneTransfer e
         unless e
+          @m_changed_path = destpath.replace /[^\/]+$/, ''
           msg = Messenger().post
             message: "文件 #{filename} 上传完毕"
             actions: 
@@ -544,7 +545,9 @@ Messenger.options =
                             $btnCancelDel.show().click @upyun_api 
                               method: "DELETE"
                               url: url
-                              , operationDone
+                              , (e)=>
+                                @m_changed_path = url.replace /[^\/]+\/$/, ''
+                                operationDone e
         else
           $ document.createElement 'button'
             .appendTo td
@@ -559,7 +562,9 @@ Messenger.options =
                 $btnCancelDel.show().click @upyun_api 
                   method: "DELETE"
                   url: url
-                  , operationDone
+                  , (e)=>
+                    @m_changed_path = url.replace /\/[^\/]+$/, '/'
+                    operationDone e
         if file.isDirectory
           $ document.createElement 'button'
             .appendTo td
@@ -665,22 +670,25 @@ $ =>
   @messengerTasks = $ document.createElement 'ul'
     .appendTo 'body'
     .messenger()
+  forverCounter = 0
   @async.forever (doneForever)=>
       if @m_active && !@shortOperationBusy
-        @refresh_filelist (e)=>
-          if e
-            msg = Messenger().post
-              message: e.message
-              type: 'error'
-              actions: 
-                ok:
-                  label: '确定'
-                  action: =>
-                    msg.hide()
-            @jump_login()
-          setTimeout (=>doneForever null), 1000
-      else
-        setTimeout (=>doneForever null), 100
+        forverCounter += 1
+        if forverCounter == 20 || @m_changed_path == @m_path
+          forverCounter = 0
+          return @refresh_filelist (e)=>
+            if e
+              msg = Messenger().post
+                message: e.message
+                type: 'error'
+                actions: 
+                  ok:
+                    label: '确定'
+                    action: =>
+                      msg.hide()
+              @jump_login()
+            setTimeout (=>doneForever null), 100
+      setTimeout (=>doneForever null), 100
     , (e)=>
       throw e
 
