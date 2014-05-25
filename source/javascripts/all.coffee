@@ -519,6 +519,7 @@ Messenger.options =
         if file.isDirectory
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '删除该目录'
             .addClass 'btn btn-danger btn-xs'
             .data 'url', file.url + '/'
             .data 'filename', file.filename
@@ -553,6 +554,7 @@ Messenger.options =
         else
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '删除该文件'
             .addClass 'btn btn-danger btn-xs'
             .data 'url', file.url
             .data 'filename', file.filename
@@ -570,6 +572,7 @@ Messenger.options =
         if file.isDirectory
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '下载该目录'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'download'
             .data 'url', file.url + '/'
@@ -579,6 +582,7 @@ Messenger.options =
         else
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '下载该文件'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'download'
             .data 'url', file.url
@@ -624,6 +628,7 @@ Messenger.options =
                                   @gui.Shell.showItemInFolder savepath
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '在浏览器中访问该文件'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'globe'
             .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
@@ -632,13 +637,25 @@ Messenger.options =
               @gui.Shell.openExternal url
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '复制该文件的公共地址(URL)到剪切版'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'paste'
             .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
+            .data 'filename', file.filename
             .click (ev)=>
-              @gui.Clipboard.get().set $(ev.currentTarget).data('url'), 'text'
+              filename = $(ev.currentTarget).data 'filename'
+              url = $(ev.currentTarget).data 'url'
+              @gui.Clipboard.get().set url, 'text'
+              msg = Messenger().post
+                message: "已将文件 #{filename} 的公共地址(URL)复制到剪切版"
+                actions: 
+                  ok:
+                    label: '确定'
+                    action: =>
+                      msg.hide()
           $ document.createElement 'button'
             .appendTo td
+            .attr title: '用文本编辑器打开该文件'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'edit'
             .data 'url', file.url
@@ -651,7 +668,10 @@ Messenger.options =
                 default_action: 'editor'
                 editor_url: $(ev.currentTarget).data 'url'
                 editor_filename: $(ev.currentTarget).data 'filename'
-
+      $('#filelist tbody [title]')
+        .tooltip
+          placement: 'bottom'
+          trigger: 'hover'
     cb null
 @jump_editor = =>
   $ '#login, #filelist'
@@ -807,7 +827,20 @@ $ =>
             url: @editor_url
             method: 'PUT'
             data: new Buffer @editor.getValue(), 'utf8'
-          , doneSaving
+          , (e)=>
+            doneSaving e
+            unless e
+              msg = Messenger().post
+                message: "成功保存文件 #{editor_filename}"
+                actions: 
+                  ok:
+                    label: '确定'
+                    action: =>
+                      msg.hide()
+  $ '[title]'
+    .tooltip
+      placement: 'bottom'
+      trigger: 'hover'
   for m in location.search.match(/([^\&?]+)\=([^\&]+)/g)||[]
     m = m.split '='
     @[decodeURIComponent m[0]] = decodeURIComponent m[1]
