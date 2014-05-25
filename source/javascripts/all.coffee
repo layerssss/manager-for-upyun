@@ -387,6 +387,19 @@ Messenger.options =
                 label: '确定'
                 action: =>
                   msg.hide()
+@action_show_url = (title, url)=>  
+  msg = Messenger().post
+    message: "#{title}<pre>#{url}</pre>"
+    actions: 
+      ok:
+        label: '确定'
+        action: =>
+          msg.hide()
+      copy:
+        label: '复制到剪切版'
+        action: (ev)=>
+          $(ev.currentTarget).text '已复制到剪切版'
+          @gui.Clipboard.get().set url, 'text'
 @nw_saveas = (filename, cb)=>
   $ dlg = document.createElement 'input'
     .appendTo 'body'
@@ -639,20 +652,13 @@ Messenger.options =
             .appendTo td
             .attr title: '复制该文件的公共地址(URL)到剪切版'
             .addClass 'btn btn-info btn-xs'
-            .prepend @createIcon 'paste'
+            .prepend @createIcon 'code'
             .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
             .data 'filename', file.filename
             .click (ev)=>
               filename = $(ev.currentTarget).data 'filename'
               url = $(ev.currentTarget).data 'url'
-              @gui.Clipboard.get().set url, 'text'
-              msg = Messenger().post
-                message: "已将文件 #{filename} 的公共地址(URL)复制到剪切版"
-                actions: 
-                  ok:
-                    label: '确定'
-                    action: =>
-                      msg.hide()
+              @action_show_url "文件 #{filename} 的公共地址(URL)", url
           $ document.createElement 'button'
             .appendTo td
             .attr title: '用文本编辑器打开该文件'
