@@ -789,21 +789,13 @@ $ =>
     .click (ev)=>
       ev.preventDefault()
       if filename = prompt "请输入新文件的文件名"
-        @shortOperation "正在新建文件 #{filename} ...", (doneCreating, $btnCancelCreateing)=>
-          cur_path = @m_path
-          $btnCancelCreateing.click @upyun_api
-            url: "#{cur_path}#{filename}"
-            method: "POST"
-            data: ''
-            , (e, data)=>
-              doneCreating e
-              @open '?' + $.param
-                username: @username
-                password: @password
-                bucket: @bucket
-                default_action: 'editor'
-                editor_url: "#{cur_path}#{filename}"
-                editor_filename: filename
+        @open '?' + $.param
+          username: @username
+          password: @password
+          bucket: @bucket
+          default_action: 'editor'
+          editor_url: "#{@m_path}#{filename}"
+          editor_filename: filename
   $ '#btnReloadEditor'
     .click (ev)=>
       ev.preventDefault()
