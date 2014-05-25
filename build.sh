@@ -13,6 +13,7 @@ pkg.main = 'index.html';
 pkg.window.toolbar = false; 
 require('fs').writeFileSync('nodebob/app/package.json', JSON.stringify(pkg), 'utf8');
 EOF
+cp -f ./build.win32.sh nodebob/build.win32.sh
 cd nodebob
 rm -Rf release.* manager-for-upyun-*
 ./build.linux.sh
