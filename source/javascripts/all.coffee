@@ -633,6 +633,13 @@ Messenger.options =
           $ document.createElement 'button'
             .appendTo td
             .addClass 'btn btn-info btn-xs'
+            .prepend @createIcon 'paste'
+            .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
+            .click (ev)=>
+              @gui.Clipboard.get().set $(ev.currentTarget).data('url'), 'text'
+          $ document.createElement 'button'
+            .appendTo td
+            .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'edit'
             .data 'url', file.url
             .data 'filename', file.filename
@@ -644,6 +651,7 @@ Messenger.options =
                 default_action: 'editor'
                 editor_url: $(ev.currentTarget).data 'url'
                 editor_filename: $(ev.currentTarget).data 'filename'
+
     cb null
 @jump_editor = =>
   $ '#login, #filelist'
