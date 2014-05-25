@@ -28,6 +28,19 @@ title: 又拍云资源管理器
     #toolbar
       .btn-group
         %button.btn.btn-sm.btn-info.dropdown-toggle{ data: { toggle: :dropdown } }
+          %i.fa.fa-plus
+          %span.caret
+        %ul.dropdown-menu
+          %li
+            %a#btnCreateFile{ href: '#' }
+              %i.fa.fa-file
+              新建文件
+          %li
+            %a#btnCreateFolder{ href: '#' }
+              %i.fa.fa-folder
+              新建子目录
+      .btn-group
+        %button.btn.btn-sm.btn-info.dropdown-toggle{ data: { toggle: :dropdown } }
           %i.fa.fa-cloud-upload
           %span.caret
         %ul.dropdown-menu
