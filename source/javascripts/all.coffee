@@ -17,6 +17,7 @@ if @require?
   @path = @require 'path'
   @mkdirp = @require 'mkdirp'
   @gui = @require 'nw.gui'
+  @MD5 = require 'MD5'
 try
   @m_favs = JSON.parse(localStorage.favs)||{}
 catch
@@ -100,17 +101,17 @@ catch
   '503 System Error': '系统错误'
 @_upyun_api = (opt, cb)=>
   opt.headers?= {}
-  if opt.data?
-    opt.headers["Content-Length"] = opt.data.length
+  opt.headers["Content-Length"] = String opt.data?.length || 0 unless opt.method in ['GET', 'HEAD']
+  date = new Date().toUTCString()
+  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}&#{opt.data?.length ||0}&#{@MD5 @password}"
+  signature = @MD5 signature
+  opt.headers["Authorization"] = "UpYun #{@username}:#{signature}"
+  opt.headers["Date"] = date
   req = request
     method: opt.method
-    url: "https://v0.api.upyun.com/#{@bucket}#{opt.url}"
+    url: "http://v0.api.upyun.com/#{@bucket}#{opt.url}"
     headers: opt.headers
     body: opt.data
-    auth:
-      user: @username
-      pass: @password
-      sendImmediately: true
     , (e, res, data)=>
       return cb e if e
       if res.statusCode == 200
@@ -133,7 +134,7 @@ catch
 @upyun_api = (opt, cb)=>
   start = Date.now()
   @_upyun_api opt, (e, data)=>
-    console?.log "#{opt.method} #{opt.url} done (+#{Date.now() - start}ms)"
+    console?.log "#{opt.method} #{@bucket}#{opt.url} done (+#{Date.now() - start}ms)"
     cb e, data
 
 Messenger.options = 
@@ -430,6 +431,7 @@ Messenger.options =
   @jump_path '/'  
 @jump_path = (path)=>
   @m_path = path
+  @m_changed_path = path
   @m_active = true
   @m_files = null
   $ document.createElement 'div'
@@ -676,6 +678,7 @@ $ =>
         forverCounter += 1
         if forverCounter == 20 || @m_changed_path == @m_path
           forverCounter = 0
+          @m_changed_path = null
           return @refresh_filelist (e)=>
             if e
               msg = Messenger().post
@@ -725,16 +728,19 @@ $ =>
         $ "#filelist tbody tr:not(:contains(#{JSON.stringify val}))"
           .addClass 'filtered'
   $ '#btnDownloadFolder'
-    .click =>
+    .click (ev)=>
+      ev.preventDefault()
       @action_downloadFolder null, @m_path
   $ '#btnUploadFiles'
-    .click =>
+    .click (ev)=>
+      ev.preventDefault()
       @nw_selectfiles (files)=>
         for filepath in files
           filename = @path.basename filepath
           @action_uploadFile filepath, filename, "#{@m_path}#{encodeURIComponent filename}"
   $ '#btnUploadFolder'
-    .click =>
+    .click (ev)=>
+      ev.preventDefault()
       @nw_directory (dirpath)=>
         @action_uploadFile dirpath, @path.basename(dirpath), @m_path
   $ '#btnReloadEditor'
