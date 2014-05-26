@@ -18,6 +18,7 @@ if @require?
   @mkdirp = @require 'mkdirp'
   @gui = @require 'nw.gui'
   @MD5 = require 'MD5'
+  @url = require 'url'
 try
   @m_favs = JSON.parse(localStorage.favs)||{}
 catch
@@ -103,7 +104,11 @@ catch
   opt.headers?= {}
   opt.headers["Content-Length"] = String opt.data?.length || 0 unless opt.method in ['GET', 'HEAD']
   date = new Date().toUTCString()
-  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}&#{opt.data?.length ||0}&#{@MD5 @password}"
+  if @password.match /^MD5_/
+    md5_password = @password.replace /^MD5_/, ''
+  else
+    md5_password = @MD5 @password
+  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}&#{opt.data?.length ||0}&#{md5_password}"
   signature = @MD5 signature
   opt.headers["Authorization"] = "UpYun #{@username}:#{signature}"
   opt.headers["Date"] = date
@@ -396,7 +401,28 @@ Messenger.options =
         action: =>
           msg.hide()
       copy:
-        label: '复制到剪切版'
+        label: '将该地址复制到剪切版'
+        action: (ev)=>
+          $(ev.currentTarget).text '已复制到剪切版'
+          @gui.Clipboard.get().set url, 'text'
+@action_share = (url)=>
+  url = "upyun://#{@username}:#{@password}@#{@bucket}#{url}"
+  msg = Messenger().post
+    message: """
+      您可以通过以下地址向其他人分享该目录：
+      <pre>#{url}</pre>
+      注意：<ol>
+        <li>该地址中包含了当前操作员的授权信息，向他人分享该地址的同时，也同时分享了该操作员的身份。</li>
+        <li>当他人安装了“又拍云管理器时”后，便可以直接点击该链接以打开。</li>
+      </ol>
+      """
+    actions: 
+      ok:
+        label: '确定'
+        action: =>
+          msg.hide()
+      copy:
+        label: '将该地址复制到剪切版'
         action: (ev)=>
           $(ev.currentTarget).text '已复制到剪切版'
           @gui.Clipboard.get().set url, 'text'
@@ -592,6 +618,15 @@ Messenger.options =
             .data 'filename', file.filename
             .click (ev)=>
               @action_downloadFolder $(ev.currentTarget).data('filename'), $(ev.currentTarget).data('url')
+          $ document.createElement 'button'
+            .appendTo td
+            .attr title: '向其他人分享该目录'
+            .addClass 'btn btn-info btn-xs'
+            .prepend @createIcon 'share'
+            .data 'url', file.url + '/'
+            .click (ev)=>
+              url = $(ev.currentTarget).data 'url'
+              @action_share url
         else
           $ document.createElement 'button'
             .appendTo td
@@ -734,6 +769,7 @@ $ =>
   $ '#btnAddFav'
     .click =>
       fav = $('#formLogin').serializeObject()
+      fav.password = "MD5_" + @MD5 fav.password unless fav.password.match /^MD5_/
       @m_favs["#{fav.username}@#{fav.bucket}"] = fav
       localStorage.favs = JSON.stringify @m_favs
       @refresh_favs()
@@ -741,6 +777,7 @@ $ =>
     .submit (ev)=>
       ev.preventDefault()
       @[k] = v for k, v of $(ev.currentTarget).serializeObject()
+      @password = "MD5_" + @MD5 @password unless @password.match /^MD5_/
       $ '#filelist tbody'
         .empty()
       @jump_filelist()
@@ -817,6 +854,9 @@ $ =>
             doneReloading null
             unless e
               @editor.setValue data
+  $ '#btnShareFolder'
+    .click (ev)=>
+      @action_share @m_path
   $ '#btnSaveEditor'
     .click (ev)=>
       ev.preventDefault()
@@ -839,9 +879,13 @@ $ =>
     .tooltip
       placement: 'bottom'
       trigger: 'hover'
+  if (url = @gui.App.argv.pop()) && (url = @url.parse url).protocol.toLowerCase() == 'upyun:' && (auth = url.auth?.split ':')?.length == 2
+    newSearch = "?username=#{encodeURIComponent auth[0]}&password=#{encodeURIComponent auth[1]}&bucket=#{url.hostname}&m_path=#{encodeURIComponent url.pathname}&default_action=#{encodeURIComponent (url.hash?.replace /^\#/, '')||'filelist'}" 
+    return location.search = newSearch unless location.search == newSearch
   for m in location.search.match(/([^\&?]+)\=([^\&]+)/g)||[]
     m = m.split '='
     @[decodeURIComponent m[0]] = decodeURIComponent m[1]
   (@["jump_#{@default_action}"]||@jump_login)()
+
         
 

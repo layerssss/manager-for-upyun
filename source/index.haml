@@ -26,6 +26,8 @@ title: 又拍云资源管理器
 #filelist
   #topbar
     #toolbar
+      %a.btn.btn-sm.btn-info#btnShareFolder{ title: '向其他人分享该目录' }
+        %i.fa.fa-share
       .btn-group
         %button.btn.btn-sm.btn-info.dropdown-toggle{ data: { toggle: :dropdown }, title: '新建..' }
           %i.fa.fa-plus
@@ -52,7 +54,7 @@ title: 又拍云资源管理器
             %a#btnUploadFolder{ href: '#' }
               %i.fa.fa-folder
               上传整个目录
-      %button.btn.btn-sm.btn-info#btnDownloadFolder{ title: '下载当前目录' }
+      %a.btn.btn-sm.btn-info#btnDownloadFolder{ title: '下载当前目录' }
         %i.fa.fa-download
       %input#inputFilter.form-control{ type: :text, name: :filter, placeholder: '筛选列表' }
     %ol#path.breadcrumb
