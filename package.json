@@ -2,6 +2,7 @@
   "name": "manager_for_upyun",
   "main": "http://localhost:4567",
   "node-remote": "http://localhost:4567",
+  "single-instance": false,
   "version": "0.0.3",
   "window": {
     "icon": "app.ico",
