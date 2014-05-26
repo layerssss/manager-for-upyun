@@ -1,10 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 npm install
 bower install
 bundle install
 bundle exec middleman build
-rm -Rf nodebob/app/*
-cp -Rf build/* nodebob/app
+rm -Rf nodebob/app
+cp -Rf build nodebob/app
 cp -Rf node_modules nodebob/app
 VERSION=`node -e "console.log(require('./package.json').version);"`
 node <<"EOF"
