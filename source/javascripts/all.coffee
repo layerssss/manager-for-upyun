@@ -102,17 +102,17 @@ catch
   '503 System Error': '系统错误'
 @_upyun_api = (opt, cb)=>
   opt.headers?= {}
-  opt.headers["Content-Length"] = String opt.data?.length || 0 unless opt.method in ['GET', 'HEAD']
+  opt.headers["Content-Length"] = String opt.length || opt.data?.length || 0 unless opt.method in ['GET', 'HEAD']
   date = new Date().toUTCString()
   if @password.match /^MD5_/
     md5_password = @password.replace /^MD5_/, ''
   else
     md5_password = @MD5 @password
-  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}&#{opt.data?.length ||0}&#{md5_password}"
+  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}&#{opt.length || opt.data?.length ||0}&#{md5_password}"
   signature = @MD5 signature
   opt.headers["Authorization"] = "UpYun #{@username}:#{signature}"
   opt.headers["Date"] = date
-  req = request
+  @_upyun_api_req = req = @request
     method: opt.method
     url: "http://v0.api.upyun.com/#{@bucket}#{opt.url}"
     headers: opt.headers
@@ -131,6 +131,7 @@ catch
             status = res.body
         status = @upyun_messages[status]||status
         cb new Error status
+  opt.source?.pipe req
   req.pipe opt.pipe if opt.pipe
   req.on 'data', opt.onData if opt.onData 
   return =>
@@ -283,28 +284,33 @@ Messenger.options =
   api_aborting = null
   aborting = =>
     aborted = true
-    api_aborting() if api_aborting?
+    api_aborting?()
   status = 
     total_files: files.length
     total_bytes: files.reduce ((a, b)-> a + b.length), 0
     current_files: 0
     current_bytes: 0
   @async.eachSeries files, (file, doneEach)=>
-      @fs.readFile file.path, (e, data)=>
-        return doneEach e if e
+      fs.stat file.path, (e, stats)=>
         return doneEach (new Error '操作已取消') if aborted
-        data = undefined unless data.length
+        return doneEach e if e
+        file_length = stats.size
+        file_stream = fs.createReadStream file.path
         api_aborting = @upyun_api 
           method: "PUT"
           headers:
             'mkdir': 'true'
           url: url + file.url
-          data: data
+          length: file_length
           , (e)=>
             status.current_files+= 1
-            status.current_bytes+= file.length
             onProgress status
             doneEach e
+        req = @_upyun_api_req
+        file_stream.pipe req
+        file_stream.on 'data', (data)=>
+          status.current_bytes+= data.length
+          onProgress status
     , cb
   return aborting
 @action_downloadFolder = (filename, url)=>
