@@ -1,24 +1,25 @@
 manager-for-uypun
 =====
 
-不再需要另外一个又拍云管理器了 [https://github.com/layerssss/manager-for-upyun](https://github.com/layerssss/manager-for-upyun)
-
-![screenshot-1.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-1.png)
-
-![screenshot-2.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-2.png)
-
-![screenshot-3.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-3.png)
-
-![screenshot-4.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-4.png)
-
-![screenshot-5.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-5.png)
+这是一个非常华丽的又拍云资源管理器，基于 node-webkit 开发，所以可以运行在各个主流操作系统上。
 
 下载
 ------
 
-* [Mac](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.5-osx.zip)
-* [Windows](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.5-win32.exe)
-* Linux [ia32](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.5-linux-ia32.zip) [x64](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.5-linux-x64.zip)
+* [Mac](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-osx.zip)
+* [Windows](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-win32.exe)
+* Linux [32位](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-linux-ia32.zip) [64位](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-linux-x64.zip)
+
+![screenshot-0.0.6-1.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-1.png)
+
+![screenshot-0.0.6-2.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-2.png)
+
+![screenshot-0.0.6-3.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-3.png)
+
+![screenshot-0.0.6-4.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-4.png)
+
+![screenshot-0.0.6-5.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-5.png)
+
 
 功能开发路线
 ------
