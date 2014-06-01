@@ -692,7 +692,7 @@ Messenger.options =
               @gui.Shell.openExternal url
           $ document.createElement 'button'
             .appendTo td
-            .attr title: '复制该文件的公共地址(URL)到剪切版'
+            .attr title: '公共地址'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'code'
             .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
