@@ -479,9 +479,9 @@ Messenger.options =
   @m_changed_path = path
   @m_active = true
   @m_files = null
-  $ document.createElement 'div'
-    .addClass 'preloader'
-    .appendTo '#filelist'
+  $ '#filelist .preloader'
+    .css
+      opacity: 1
   $ '#inputFilter'
     .val ''
   $ '#login, #editor'
@@ -533,7 +533,8 @@ Messenger.options =
     return cb e if e
     if @m_path == cur_path && JSON.stringify(@m_files) != JSON.stringify(files)
       $('#filelist tbody').empty()
-      $('#filelist .preloader').remove()
+      $('#filelist .preloader').css
+        opacity: 0
       for file in @m_files = files
         $ tr = document.createElement 'tr'
           .appendTo '#filelist tbody'
@@ -734,16 +735,6 @@ window.ondragover = window.ondrop = (ev)->
   ev.preventDefault()
   return false
 $ =>
-  $ document.createElement 'div'
-    .appendTo 'body'
-    .attr 'id', 'loading'
-  $ document.createElement 'div'
-    .appendTo 'body'
-    .attr 'id', 'loadingText'
-  for i in [1..5]
-    $ document.createElement 'div'
-      .addClass 'dot'
-      .appendTo '#loading'
   @messengerTasks = $ document.createElement 'ul'
     .appendTo 'body'
     .messenger()

@@ -1,9 +1,10 @@
 // = require bootswatch/spacelab/bootstrap
-// = require win8loading
 // = require messenger/build/css/messenger
 // = require messenger/build/css/messenger-spinner
 // = require messenger/build/css/messenger-theme-future
 // = require font-awesome
+// = require loaders
+
 body
   -webkit-transition: background-color
   &.drag_hover
@@ -51,17 +52,14 @@ a:hover
 
 #filelist
   padding: 3em 2em 0 2em
-
-  .preloader
-    background-image: image-url('712.GIF')
-    width: 64px
-    height: 64px
-    margin-left: -32px
-    top: 10em
-    left: 50%
-    position: absolute
   .btn
     margin: 0 2px
+  .preloader
+    position: fixed
+    top: 3em
+    margin-left: -1.25em
+    left: 50%
+    transition: opacity ease .2s
   tbody
     tr
       > td, >td i
