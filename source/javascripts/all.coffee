@@ -46,6 +46,8 @@ catch
       .appendTo li
       .prepend @createIcon 'trash-o'
       .addClass 'btn btn-danger btn-xs'
+      .attr 'title', '删除这条收藏记录'
+      .tooltip placement: 'bottom'
       .data 'fav', fav
       .click (ev)=>
         fav = $(ev.currentTarget).data 'fav'
@@ -872,6 +874,14 @@ $ =>
                     label: '确定'
                     action: =>
                       msg.hide()
+  $ '#btnLogout'
+    .click (ev)=>
+      ev.preventDefault()
+      @jump_login()
+  $ '#btnIssues'
+    .click (ev)=>
+      ev.preventDefault()
+      @gui.Shell.openExternal "https://gitcafe.com/layerssss/manager-for-upyun/tickets"
   $ '[title]'
     .tooltip
       placement: 'bottom'

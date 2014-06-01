@@ -6,6 +6,7 @@
 // = require loaders
 
 body
+  background-color: #fcfcfc
   -webkit-transition: background-color
   &.drag_hover
     background-color: #ccc
@@ -38,17 +39,23 @@ a:hover
   margin: -0.5em 0 0 40px
 
 #login
-  padding: 1em 2em
-  #favs
-    min-height: 5em
-    li
-      position: relative
-      button
-        position: absolute
-        right: -0.8em
-        top: .5em
-  #formLogin
-    max-width: 400px
+  position: fixed
+  top: 0
+  left: 0
+  bottom: 0
+  right: 0
+  background-color: #eee
+  overflow-x: hidden
+  overflow-y: auto
+  .login_container
+    margin: 1em 10%
+    #favs
+      li
+        position: relative
+        button
+          position: absolute
+          right: .7em
+          top: .7em
 
 #filelist
   padding: 3em 2em 0 2em

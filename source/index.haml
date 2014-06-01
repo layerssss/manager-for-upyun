@@ -2,27 +2,22 @@
 title: 又拍云资源管理器
 ---
 #login
-  .row
-    .col-xs-8
-      %form#formLogin.form-horizontal{ role: :form }
-        .form-group
-          %label.control-label.col-xs-5{ for: 'inputUsername' } 操作员用户名：
-          .col-sm-7
-            %input#inputUsername.form-control{ type: :text, name: :username }
-        .form-group
-          %label.control-label.col-xs-5{ for: 'inputPassword' } 操作员密码：
-          .col-sm-7
-            %input#inputPassword.form-control{ type: :password, name: :password }
-        .form-group
-          %label.control-label.col-xs-5{ for: 'inputBucket' } 空间名：
-          .col-sm-7
-            %input#inputBucket.form-control{ type: :text, name: :bucket }
-        .form-group.pull-right
-          %button.btn.btn-primary{ type: :submit } 连接
-          %button#btnAddFav.btn.btn-default{ type: :button } 保存
-    .col-xs-4
-      .well
-        %ul#favs.nav.nav-pills
+  .login_container
+    .well
+      %ul#favs.nav
+    %form#formLogin.form{ role: :form }
+      .form-group
+        %label.control-label{ for: 'inputUsername' } 操作员用户名：
+        %input#inputUsername.form-control{ type: :text, name: :username }
+      .form-group
+        %label.control-label{ for: 'inputPassword' } 操作员密码：
+        %input#inputPassword.form-control{ type: :password, name: :password }
+      .form-group
+        %label.control-label{ for: 'inputBucket' } 空间名：
+        %input#inputBucket.form-control{ type: :text, name: :bucket }
+      .form-group
+        %button.btn.btn-primary.btn-block{ type: :submit } 连接
+        %button#btnAddFav.btn.btn-default.btn-block{ type: :button } 保存
 #filelist
   #topbar
     #toolbar
@@ -56,6 +51,10 @@ title: 又拍云资源管理器
               上传整个目录
       %a.btn.btn-sm.btn-info#btnDownloadFolder{ title: '下载当前目录' }
         %i.fa.fa-download
+      %a.btn.btn-sm.btn-info#btnLogout{ title: '重新登录' }
+        %i.fa.fa-power-off
+      %a.btn.btn-sm.btn-info#btnIssues{ title: '提交问题' }
+        %i.fa.fa-info
       %input#inputFilter.form-control{ type: :text, name: :filter, placeholder: '筛选列表' }
     %ol#path.breadcrumb
   .preloader.load7
