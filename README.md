@@ -6,6 +6,7 @@ manager-for-uypun
 下载
 ------
 
+* 当前版本： 0.0.6 (更新于2014-06-01)
 * [Mac](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-osx.zip)
 * [Windows](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-win32.exe)
 * Linux [32位](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-linux-ia32.zip) [64位](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-linux-x64.zip)
@@ -20,6 +21,28 @@ manager-for-uypun
 
 ![screenshot-0.0.6-5.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-5.png)
 
+发布说明
+------
+
+0.0.6 (更新于2014-06-01)
+
+* 修改登录界面的外观
+* 升级至 node-webkit 0.9.2 修正了文件夹选定的问题，并增强了稳定性
+
+0.0.5 (更新于2014-05-26)
+
+* 显示单个文件上传的进度
+* (Windows) 可以分享和打开特定目录的 upyun://... 地址
+* 可以将公共地址复制到剪切板
+* 可以创建文件
+* 不再使用 SSL 接入点，并且使用了摘要授权
+* 在工具栏上加入下载和上传的按钮
+
+0.0.3 (更新于2014-04-28)
+
+* 完成文件和文件夹的拖拽上传
+* 完成文件和文件夹的下载
+* 基本的收藏夹功能
 
 功能开发路线
 ------
