@@ -67,3 +67,8 @@ manager-for-uypun
 * middleman
 * ace editor
 * bootstrap.css
+
+源码授权
+------
+
+MIT（详见源代码中的 [LICENSE](LICENSE)）

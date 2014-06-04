@@ -4,6 +4,10 @@
   "node-remote": "http://localhost:4567",
   "single-instance": false,
   "version": "0.0.6",
+  "authors": [
+    "Michael Yin <layerssss@gmail.com>"
+  ],
+  "license": "MIT",
   "window": {
     "icon": "app.ico",
     "toolbar": true,
