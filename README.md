@@ -3,12 +3,18 @@ manager-for-uypun
 
 这是一个非常华丽的又拍云资源管理器，基于 node-webkit 开发，所以可以运行在各个主流操作系统上。
 
-没有又拍云帐号？可以使用这个公用的演示帐号登录：(Windows 版本安装后可 [点击该链接直接登录演示帐号](upyun://demo:MD5_bed3482f502c7bbfb6f9fa54f36e77d7@manager-demo/) )
+没有又拍云帐号？可以使用这个公用的演示帐号登录：
 
 ```
 用户名: demo
 密码: demo123456
 空间名: manager-demo
+```
+
+Windows 版本安装后，可以直接在“运行”或者地址栏中直接打开以下地址来登录演示空间：
+
+```
+upyun://demo:MD5_bed3482f502c7bbfb6f9fa54f36e77d7@manager-demo/
 ```
 
 下载
