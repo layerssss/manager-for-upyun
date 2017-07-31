@@ -1,19 +1,10 @@
 {
   "name": "manager_for_upyun",
-  "main": "http://localhost:4567",
-  "node-remote": "http://localhost:4567",
-  "single-instance": false,
   "version": "0.0.6",
   "authors": [
     "Michael Yin <layerssss@gmail.com>"
   ],
   "license": "MIT",
-  "window": {
-    "icon": "app.ico",
-    "toolbar": true,
-    "width": 1000,
-    "height": 500
-  },
   "dependencies": {
     "MD5": "^1.2.1",
     "async": "^0.7.0",
