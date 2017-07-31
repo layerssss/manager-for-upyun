@@ -6,12 +6,10 @@ manager-for-uypun 是一个又拍云资源管理器，使用它您可以上传�
 又拍云是一个非结构化数据云存储、云处理、云分发平台，关于又拍云的详细介绍请参见[又拍云官方网站](https://www.upyun.com/)。没有又拍云帐号？可以使用这个公用的演示帐号登录：
 
 ```
-用户名: demo
-密码: demo123456
-空间名: manager-demo
+TODO: 提供一个演示账号
 ```
 
-Windows 版本安装后，可以直接在“运行”或者地址栏中直接打开以下地址来登录演示空间：
+可以直接在打开以下地址来登录演示空间：
 
 ```
 upyun://demo:MD5_bed3482f502c7bbfb6f9fa54f36e77d7@manager-demo/
@@ -21,19 +19,10 @@ upyun://demo:MD5_bed3482f502c7bbfb6f9fa54f36e77d7@manager-demo/
 ------
 
 * 当前版本： 0.0.6 (更新于2014-06-01)
-* [Mac](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-osx.zip)
-* [Windows](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-win32.exe)
-* Linux [32位](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-linux-ia32.zip) [64位](http://micyin.b0.upaiyun.com/manager-for-upyun/manager-for-upyun-0.0.6-linux-x64.zip)
 
-![screenshot-0.0.6-1.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-1.png)
-
-![screenshot-0.0.6-2.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-2.png)
-
-![screenshot-0.0.6-3.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-3.png)
-
-![screenshot-0.0.6-4.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-4.png)
-
-![screenshot-0.0.6-5.png](http://micyin.b0.upaiyun.com/manager-for-upyun/screenshot-0.0.6-5.png)
+```
+TODO: 提供下载和截屏
+```
 
 发布说明
 ------
@@ -78,7 +67,7 @@ upyun://demo:MD5_bed3482f502c7bbfb6f9fa54f36e77d7@manager-demo/
 使用的技术
 ------
 
-* node-webkit
+* node-webkit `# TODO: 替换为 Electron`
 * middleman
 * ace editor
 
