@@ -1,0 +1,40 @@
+sudo: required
+dist: trusty
+language: node_js
+cache:
+  directories:
+    - "$HOME/.cache/electron-builder"
+    - "$HOME/.npm"
+    - "$HOME/.electron"
+matrix:
+  include:
+    - os: osx
+      node_js: 6
+    - os: linux
+      node_js: 6
+addons:
+  apt:
+    packages:
+      - libgnome-keyring-dev
+      - icnsutils
+      - graphicsmagick
+      - xz-utils
+      - rpm
+      - bsdtar
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 3; fi
+install:
+  - npm install
+before_script:
+  - export
+script:
+  - npm run dist
+env:
+  global:
+    # GH_TOKEN:
+    - secure: "jvf4Ru0f+NsloMtPdr5tkI+kyo7X/hkLavJAD1YotYse63pUXPPaZ8rJKOduoMNLjlUhV+sJps+jBOwF0yY4xRTa8A/8ugjDMb7qo/8j1Glh+BPr87ldWZjiyTimq7PnBwsDFd4tY+ZmU6wgEl3E1PMq9dMaNxKjH3PPtWy3198="
+    # CSC_LINK:
+    - secure: "PJ0T4bAb/0k8qwN4unDaMrddIEYDmY8r1u1BXtn13+LF+Nwx0K0qnfoRWax/APXZ4htMhYCv7Dwrw+DYk/xhTjd6LSVIW8AYR8cVJ3GQJPj0NuMJELaLJEWEP6PNDUYPsEpqF07EzkshLMdlCaToHmqw8Rf29APxSyJshL7ELVk="
+    # CSC_KEY_PASSWORD:
+    - secure: "ZV/pnyGOkgLgDtR7BaNbw/pqcIbpptaNnh6w6hOcOIqyPnssCMIY1tgczlH0W4THtepnQ3g3UtT9dwIz6MlF+Thn0yxSvnMYrVTgub1DLfTU38AQ69iQG5dP8uneIFPX7Ya77mjJaOyyQHHYvJ+0e+v39Ls5rHM69HmdaEsFBSY="
+    

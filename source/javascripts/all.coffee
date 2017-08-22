@@ -1,24 +1,5 @@
-# = require_tree .
-# = require jquery
-# = require jquery-serialize-object
-# = require bootstrap
-# = require underscore
-# = require underscore.string/dist/underscore.string.min
-# = require messenger/build/js/messenger
-# = require messenger/build/js/messenger-theme-future
-# = require ace-builds/src-noconflict/ace.js
-if @require?
-  @request = @require 'request'
-  @moment = @require 'moment'
-  @moment.lang 'zh-cn'
-  @async = @require 'async'
-  @fs = @require 'fs'
-  @os = @require 'os'
-  @path = @require 'path'
-  @mkdirp = @require 'mkdirp'
-  @gui = @require 'nw.gui'
-  @MD5 = require 'MD5'
-  @url = require 'url'
+moment.locale 'zh-cn'
+
 try
   @m_favs = JSON.parse(localStorage.favs)||{}
 catch
@@ -38,7 +19,7 @@ catch
         ev.preventDefault()
         $(ev.currentTarget).parent().addClass('active').siblings().removeClass 'active'
         for k, v of $(ev.currentTarget).data 'fav'
-          $ "#input#{_.str.capitalize k}"
+          $ "#input#{_.capitalize k}"
             .val v
         $ '#formLogin'
           .submit()
@@ -82,26 +63,7 @@ catch
     ++u
     break unless bytes >= thresh
   bytes.toFixed(1) + " " + units[u]
-@upyun_messages = 
-  '200 OK': '操作成功'
-  '404': '找不到文件'
-  '400 Bad Request': '错误请求(如 URL 缺少空间名)'
-  '401 Unauthorized': '访问未授权'
-  '401 Sign error': '签名错误(操作员和密码,或签名格式错误)'
-  '401 Need Date Header': '发起的请求缺少 Date 头信息'
-  '401 Date offset error': '发起请求的服务器时间错误，请检查服务器时间是否与世界时间一致'
-  '403 Not Access': '权限错误(如非图片文件上传到图片空间)'
-  '403 File size too max': '单个文件超出大小(100Mb 以内)'
-  '403 Not a Picture File': '图片类空间错误码，非图片文件或图片文件格式错误。针对图片空间只允许上传 jpg/png/gif/bmp/tif 格式。'
-  '403 Picture Size too max': '图片类空间错误码，图片尺寸太大。针对图片空间，图片总像素在 200000000 以内。'
-  '403 Bucket full': '空间已用满'
-  '403 Bucket blocked': '空间被禁用,请联系管理员'
-  '403 User blocked': '操作员被禁用'
-  '403 Image Rotate Invalid Parameters': '图片旋转参数错误'
-  '403 Image Crop Invalid Parameters': '图片裁剪参数错误'
-  '404 Not Found': '获取文件或目录不存在；上传文件或目录时上级目录不存在'
-  '406 Not Acceptable(path)': '目录错误（创建目录时已存在同名文件；或上传文件时存在同名目录)'
-  '503 System Error': '系统错误'
+
 @_upyun_api = (opt, cb)=>
   opt.headers?= {}
   opt.headers["Content-Length"] = String opt.length || opt.data?.length || 0 unless opt.method in ['GET', 'HEAD']
@@ -109,36 +71,38 @@ catch
   if @password.match /^MD5_/
     md5_password = @password.replace /^MD5_/, ''
   else
-    md5_password = @MD5 @password
-  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}&#{opt.length || opt.data?.length ||0}&#{md5_password}"
-  signature = @MD5 signature
-  opt.headers["Authorization"] = "UpYun #{@username}:#{signature}"
+    md5_password = MD5 @password
+  signature = "#{opt.method}&/#{@bucket}#{opt.url}&#{date}"
+  signature = Crypto.createHmac('sha1', md5_password).update(signature).digest('base64')
+
+  opt.headers["Authorization"] = "UPYUN #{@username}:#{signature}"
   opt.headers["Date"] = date
-  @_upyun_api_req = req = @request
-    method: opt.method
-    url: "http://v0.api.upyun.com/#{@bucket}#{opt.url}"
-    headers: opt.headers
-    body: opt.data
-    , (e, res, data)=>
+  @_upyun_api_req = req = CallRequest
+    options: 
+      method: opt.method
+      url: "http://v0.api.upyun.com/#{@bucket}#{opt.url}"
+      headers: opt.headers
+      body: opt.data
+    onData: opt.onData
+    onRequestData: opt.onRequestData
+    pipeRequest: opt.pipeRequest
+    pipeResponse: opt.pipeResponse
+    onFinish: (e, res, data)=>
       return cb e if e
       if res.statusCode == 200
         cb null, data
       else
-        status = String res.statusCode
-        if res.body
-          statusMatch = res.body.match(/\<h\d\>\d+\s(.+)\<\/\s*h\d\>/)
-          if status = statusMatch?[1]
-            status = "#{res.statusCode} #{status}"
-          else
-            status = res.body
-        status = @upyun_messages[status]||status
-        cb new Error status
-  opt.source?.pipe req
-  req.pipe opt.pipe if opt.pipe
-  req.on 'data', opt.onData if opt.onData 
+        status = null
+        try
+          status = JSON.parse(data) if data
+        if status && status.msg
+          cb new Error status.msg
+        else
+          cb new Error "未知错误 (HTTP#{res.statusCode})"
   return =>
     req.abort()
     cb new Error '操作已取消'
+
 @upyun_api = (opt, cb)=>
   start = Date.now()
   @_upyun_api opt, (e, data)=>
@@ -268,7 +232,7 @@ Messenger.options =
   results = []
   @upyun_find_abort = @upyun_readdir url, (e, files)=>
     return cb e if e
-    @async.eachSeries files, (file, doneEach)=>
+    async.eachSeries files, (file, doneEach)=>
         if file.isDirectory
           @upyun_find file.url + '/', (e, tmp)=>
             return doneEach e if e
@@ -281,7 +245,7 @@ Messenger.options =
       , (e)=> 
         @upyun_find_abort = ->
         cb e, results
-@uypun_upload = (url, files, onProgress, cb)=>
+@upyun_upload = (url, files, onProgress, cb)=>
   aborted = false
   api_aborting = null
   aborting = =>
@@ -292,28 +256,28 @@ Messenger.options =
     total_bytes: files.reduce ((a, b)-> a + b.length), 0
     current_files: 0
     current_bytes: 0
-  @async.eachSeries files, (file, doneEach)=>
-      fs.stat file.path, (e, stats)=>
+ 
+  async.eachSeries files, (file, doneEach)=>
+      Fs.stat file.path, (e, stats)=>
         return doneEach (new Error '操作已取消') if aborted
         return doneEach e if e
-        file_length = stats.size
-        file_stream = fs.createReadStream file.path
-        api_aborting = @upyun_api 
-          method: "PUT"
-          headers:
-            'mkdir': 'true'
-          url: url + file.url
-          length: file_length
+        api_aborting = @upyun_api
+            pipeRequest: file.path
+            method: "PUT"
+            headers:
+              'mkdir': 'true',
+            length: stats.size
+            url: url + file.url
+            onRequestData: (data)=>
+              status.current_bytes+= data.length
+              onProgress status
           , (e)=>
             status.current_files+= 1
             onProgress status
             doneEach e
-        req = @_upyun_api_req
-        file_stream.pipe req
-        file_stream.on 'data', (data)=>
-          status.current_bytes+= data.length
-          onProgress status
-    , cb
+    , (e)=>
+      cb e
+
   return aborting
 @action_downloadFolder = (filename, url)=>
   unless filename || filename = url.match(/([^\/]+)\/$/)?[1]
@@ -324,7 +288,7 @@ Messenger.options =
     @upyun_find url, (e, files)=>
       doneFind e
       unless e
-        @nw_directory (savepath)=>
+        SelectFolder (savepath)=>
           @taskOperation "正在下载目录 #{filename} ...", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
             total_files = files.length
             total_bytes = files.reduce ((a, b)-> a + b.length), 0
@@ -333,23 +297,24 @@ Messenger.options =
             aborting = null
             $btnCancelTransfer.click =>
               aborting() if aborting?
-            @async.eachSeries files, ((file, doneEach)=>
+            async.eachSeries files, ((file, doneEach)=>
               return (_.defer => doneEach null) if file.isDirectory
               segs = file.url.substring(url.length).split '/'
               segs = segs.map decodeURIComponent
-              destpath = @path.join savepath, filename, @path.join.apply @path, segs
-              @mkdirp @path.dirname(destpath), (e)=>
+              destpath = Path.join savepath, filename, Path.join.apply Path, segs
+
+              Mkdirp Path.dirname(destpath), (e)=>
                 return doneEach e if e
-                stream = @fs.createWriteStream destpath
-                stream.on 'error', doneEach
-                stream.on 'open', =>
+                _.defer =>
+                  bytesWritten = 0
                   current_files+= 1
                   aborting = @upyun_api 
                     method: 'GET'
                     url: file.url
-                    pipe: stream
-                    onData: =>
-                      progressTransfer (Math.floor 100 * (current_bytes + stream.bytesWritten) / total_bytes), "已下载：#{current_files} / #{total_files} (#{@humanFileSize current_bytes + stream.bytesWritten} / #{@humanFileSize total_bytes})"
+                    pipeResponse: destpath
+                    onData: (data)=>
+                      bytesWritten += data.length
+                      progressTransfer (Math.floor 100 * (current_bytes + bytesWritten) / total_bytes), "已下载：#{current_files} / #{total_files} (#{@humanFileSize current_bytes + bytesWritten} / #{@humanFileSize total_bytes})"
                     , (e)=>
                       current_bytes+= file.length unless e
                       doneEach e
@@ -369,25 +334,25 @@ Messenger.options =
                         label: "打开"
                         action: => 
                           msg.hide()
-                          @gui.Shell.openItem savepath
+                          Electron.shell.openItem savepath
 @action_uploadFile = (filepath, filename, destpath)=>
   @taskOperation "正在上传 #{filename}", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
     files = []
     loadfileSync = (file)=>
-      stat = @fs.statSync(file.path)
+      stat = Fs.statSync(file.path)
       if stat.isFile()
         file.length = stat.size
         files.push file 
       if stat.isDirectory()
-        for filename in @fs.readdirSync file.path
+        for filename in Fs.readdirSync file.path
           loadfileSync 
-            path: @path.join(file.path, filename)
+            path: Path.join(file.path, filename)
             url: file.url + '/' + encodeURIComponent filename
     try
       loadfileSync path: filepath, url: ''
     catch e
       return doneTransfer e if e
-    $btnCancelTransfer.show().click @uypun_upload destpath, files, (status)=>
+    $btnCancelTransfer.show().click @upyun_upload destpath, files, (status)=>
         progressTransfer (Math.floor 100 * status.current_bytes / status.total_bytes), "已上传：#{status.current_files} / #{status.total_files} (#{@humanFileSize status.current_bytes} / #{@humanFileSize status.total_bytes})"
       , (e)=>
         doneTransfer e
@@ -412,7 +377,7 @@ Messenger.options =
         label: '将该地址复制到剪切版'
         action: (ev)=>
           $(ev.currentTarget).text '已复制到剪切版'
-          @gui.Clipboard.get().set url, 'text'
+          Electroni.clipboard.writeText url
 @action_share = (url)=>
   url = "upyun://#{@username}:#{@password}@#{@bucket}#{url}"
   msg = Messenger().post
@@ -433,37 +398,7 @@ Messenger.options =
         label: '将该地址复制到剪切版'
         action: (ev)=>
           $(ev.currentTarget).text '已复制到剪切版'
-          @gui.Clipboard.get().set url, 'text'
-@nw_saveas = (filename, cb)=>
-  $ dlg = document.createElement 'input'
-    .appendTo 'body'
-    .css position: 'absolute', top: - 50
-    .attr type: 'file', nwsaveas: filename
-    .on 'change', =>
-      val = $(dlg).val()
-      $(dlg).remove()
-      cb val
-    .trigger 'click'
-@nw_directory = (cb)=>
-  $ dlg = document.createElement 'input'
-    .appendTo 'body'
-    .css position: 'absolute', top: - 50
-    .attr type: 'file', nwdirectory: true
-    .on 'change', =>
-      val = $(dlg).val()
-      $(dlg).remove()
-      cb val
-    .trigger 'click'
-@nw_selectfiles = (cb)=>
-  $ dlg = document.createElement 'input'
-    .appendTo 'body'
-    .css position: 'absolute', top: - 50
-    .attr type: 'file', multiple: true
-    .on 'change', =>
-      val = $(dlg).val()
-      $(dlg).remove()
-      cb val.split ';'
-    .trigger 'click'
+          Electron.clipboard.writeText url, 'text'
 
 @jump_login = =>
   @m_path = '/'
@@ -511,7 +446,7 @@ Messenger.options =
     .appendTo li
     .text @bucket
     .prepend @createIcon 'cloud'
-    .attr 'href', "http://#{bucket}.b0.upaiyun.com/"
+    .attr 'href', "http://#{@bucket}.b0.upaiyun.com/"
     .data 'url', '/'
   for seg, i in segs
     url = '/' + segs[0..i].map(encodeURIComponent).join('/') + '/'
@@ -522,7 +457,7 @@ Messenger.options =
       .appendTo li
       .text seg
       .prepend @createIcon 'folder'
-      .attr 'href', "http://#{bucket}.b0.upaiyun.com#{url}"
+      .attr 'href', "http://#{@bucket}.b0.upaiyun.com#{url}"
       .data 'url', url
   $ '#path li:not(:first-child)>a'
     .click (ev)=>
@@ -561,7 +496,7 @@ Messenger.options =
           .text if file.isDirectory then '' else @humanFileSize file.length
         $ document.createElement 'td'
           .appendTo tr
-          .text @moment(file.mtime).format 'LLL'
+          .text moment(file.mtime).format 'LLL'
         $ td = document.createElement 'td'
           .appendTo tr
         if file.isDirectory
@@ -649,20 +584,20 @@ Messenger.options =
               filename = $(ev.currentTarget).data 'filename'
               url = $(ev.currentTarget).data 'url'
               length = $(ev.currentTarget).data 'length'
-              @nw_saveas filename, (savepath)=>
+              SaveAsFile filename, (savepath)=>
                 @taskOperation "正在下载文件 #{filename} ..", (progressTransfer, doneTransfer, $btnCancelTransfer)=>
                   aborting = null
                   $btnCancelTransfer.click =>
                     aborting() if aborting?
-                  stream = @fs.createWriteStream savepath
-                  stream.on 'error', doneTransfer
-                  stream.on 'open', =>
+                  _.defer =>
+                    bytesWritten = 0
                     aborting = @upyun_api 
                       method: "GET"
                       url: url
-                      pipe: stream
-                      onData: =>
-                        progressTransfer (Math.floor 100 * stream.bytesWritten / length), "#{@humanFileSize stream.bytesWritten} / #{@humanFileSize length}"
+                      pipeResponse: savepath
+                      onData: (data)=>
+                        bytesWritten += data.length
+                        progressTransfer (Math.floor 100 * bytesWritten / length), "#{@humanFileSize bytesWritten} / #{@humanFileSize length}"
                       , (e, data)=>
                         doneTransfer e
                         unless e
@@ -677,12 +612,12 @@ Messenger.options =
                                 label: "打开"
                                 action: => 
                                   msg.hide()
-                                  @gui.Shell.openItem savepath
+                                  Electron.shell.openItem savepath
                               showItemInFolder: 
                                 label: "打开目录"
                                 action: => 
                                   msg.hide()
-                                  @gui.Shell.showItemInFolder savepath
+                                  Electron.shell.showItemInFolder savepath
           $ document.createElement 'button'
             .appendTo td
             .attr title: '在浏览器中访问该文件'
@@ -691,7 +626,7 @@ Messenger.options =
             .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
             .click (ev)=>
               url = $(ev.currentTarget).data 'url'
-              @gui.Shell.openExternal url
+              Electron.shell.openExternal url
           $ document.createElement 'button'
             .appendTo td
             .attr title: '公共地址'
@@ -711,11 +646,10 @@ Messenger.options =
             .data 'url', file.url
             .data 'filename', file.filename
             .click (ev)=>
-              @open '?' + $.param
+              Open 'editor',
                 username: @username
                 password: @password
                 bucket: @bucket
-                default_action: 'editor'
                 editor_url: $(ev.currentTarget).data 'url'
                 editor_filename: $(ev.currentTarget).data 'filename'
       $('#filelist tbody [title]')
@@ -728,8 +662,8 @@ Messenger.options =
     .hide()
   $ '#editor'
     .show()
-  @document.title = @editor_filename
-  @editor = @ace.edit $('#editor .editor')[0]
+  window.document.title = @editor_filename
+  @editor = Ace.edit $('#editor .editor')[0]
   $('#btnReloadEditor').click()
 
 
@@ -741,7 +675,7 @@ $ =>
     .appendTo 'body'
     .messenger()
   forverCounter = 0
-  @async.forever (doneForever)=>
+  async.forever (doneForever)=>
       if @m_active && !@shortOperationBusy
         forverCounter += 1
         if forverCounter == 20 || @m_changed_path == @m_path
@@ -768,7 +702,7 @@ $ =>
   $ '#btnAddFav'
     .click =>
       fav = $('#formLogin').serializeObject()
-      fav.password = "MD5_" + @MD5 fav.password unless fav.password.match /^MD5_/
+      fav.password = "MD5_" + MD5 fav.password unless fav.password.match /^MD5_/
       @m_favs["#{fav.username}@#{fav.bucket}"] = fav
       localStorage.favs = JSON.stringify @m_favs
       @refresh_favs()
@@ -776,7 +710,7 @@ $ =>
     .submit (ev)=>
       ev.preventDefault()
       @[k] = v for k, v of $(ev.currentTarget).serializeObject()
-      @password = "MD5_" + @MD5 @password unless @password.match /^MD5_/
+      @password = "MD5_" + MD5 @password unless @password.match /^MD5_/
       $ '#filelist tbody'
         .empty()
       @jump_filelist()
@@ -804,19 +738,19 @@ $ =>
   $ '#btnUploadFiles'
     .click (ev)=>
       ev.preventDefault()
-      @nw_selectfiles (files)=>
+      SelectFiles (files)=>
         for filepath in files
-          filename = @path.basename filepath
+          filename = Path.basename filepath
           @action_uploadFile filepath, filename, "#{@m_path}#{encodeURIComponent filename}"
   $ '#btnUploadFolder'
     .click (ev)=>
       ev.preventDefault()
-      @nw_directory (dirpath)=>
-        @action_uploadFile dirpath, @path.basename(dirpath), @m_path
+      SelectFolder (dirpath)=>
+        @action_uploadFile dirpath, Path.basename(dirpath), @m_path
   $ '#btnCreateFolder'
     .click (ev)=>
       ev.preventDefault()
-      if filename = prompt "请输入新目录的名称"
+      Prompt "请输入新目录的名称", (filename)=>
         @shortOperation "正在新建目录 #{filename} ...", (doneCreating, $btnCancelCreateing)=>
           cur_path = @m_path
           $btnCancelCreateing.click @upyun_api
@@ -830,18 +764,17 @@ $ =>
   $ '#btnCreateFile'
     .click (ev)=>
       ev.preventDefault()
-      if filename = prompt "请输入新文件的文件名"
-        @open '?' + $.param
+      Prompt "请输入新文件的文件名", (filename)=>
+        Open 'editor',
           username: @username
           password: @password
           bucket: @bucket
-          default_action: 'editor'
           editor_url: "#{@m_path}#{filename}"
           editor_filename: filename
   $ '#btnReloadEditor'
     .click (ev)=>
       ev.preventDefault()
-      @shortOperation "正在加载文件 #{editor_filename} ...", (doneReloading, $btnCancelReloading)=>
+      @shortOperation "正在加载文件 #{@editor_filename} ...", (doneReloading, $btnCancelReloading)=>
         $btnCancelReloading.click @upyun_api 
           url: @editor_url
           method: 'GET'
@@ -859,7 +792,7 @@ $ =>
   $ '#btnSaveEditor'
     .click (ev)=>
       ev.preventDefault()
-      @shortOperation "正在保存文件 #{editor_filename} ...", (doneSaving, $btnCancelSaving)=>
+      @shortOperation "正在保存文件 #{@editor_filename} ...", (doneSaving, $btnCancelSaving)=>
         $btnCancelSaving.click @upyun_api 
             url: @editor_url
             method: 'PUT'
@@ -868,7 +801,7 @@ $ =>
             doneSaving e
             unless e
               msg = Messenger().post
-                message: "成功保存文件 #{editor_filename}"
+                message: "成功保存文件 #{@editor_filename}"
                 actions: 
                   ok:
                     label: '确定'
@@ -881,18 +814,15 @@ $ =>
   $ '#btnIssues'
     .click (ev)=>
       ev.preventDefault()
-      @gui.Shell.openExternal "https://gitcafe.com/layerssss/manager-for-upyun/tickets"
+      Electron.shell.openExternal "https://github.com/layerssss/manager-for-upyun/issues"
   $ '[title]'
     .tooltip
       placement: 'bottom'
       trigger: 'hover'
-  if (url = @gui.App.argv.pop()) && (url = @url.parse url).protocol.toLowerCase() == 'upyun:' && (auth = url.auth?.split ':')?.length == 2
-    newSearch = "?username=#{encodeURIComponent auth[0]}&password=#{encodeURIComponent auth[1]}&bucket=#{url.hostname}&m_path=#{encodeURIComponent url.pathname}&default_action=#{encodeURIComponent (url.hash?.replace /^\#/, '')||'filelist'}" 
-    return location.search = newSearch unless location.search == newSearch
-  for m in location.search.match(/([^\&?]+)\=([^\&]+)/g)||[]
-    m = m.split '='
-    @[decodeURIComponent m[0]] = decodeURIComponent m[1]
-  (@["jump_#{@default_action}"]||@jump_login)()
-
+  
+  window.Init = (action, params) =>
+    for key, value of params
+      @[key] = value
+    @["jump_#{action}"]()
         
 

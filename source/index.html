@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    
+    <!-- Always force latest IE rendering engine or request Chrome Frame -->
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    
+    <title>又拍云资源管理器</title>
+    <script src="../bundle/vendors.js"></script>
+    <script src="../bundle/index.js"></script>
+    <link rel="icon"  href="app.ico" />
+  </head>
+  
+  <body class="index">
+    <div id='login'>
+<div class='login_container'>
+<div class='well'>
+<ul class='nav' id='favs'></ul>
+</div>
+<form class='form' id='formLogin' role='form'>
+<div class='form-group'>
+<label class='control-label' for='inputUsername'>操作员用户名：</label>
+<input class='form-control' id='inputUsername' name='username' type='text'>
+</div>
+<div class='form-group'>
+<label class='control-label' for='inputPassword'>操作员密码：</label>
+<input class='form-control' id='inputPassword' name='password' type='password'>
+</div>
+<div class='form-group'>
+<label class='control-label' for='inputBucket'>空间名：</label>
+<input class='form-control' id='inputBucket' name='bucket' type='text'>
+</div>
+<div class='form-group'>
+<button class='btn btn-primary btn-block' type='submit'>连接</button>
+<button class='btn btn-default btn-block' id='btnAddFav' type='button'>保存</button>
+</div>
+</form>
+</div>
+</div>
+<div id='filelist'>
+<div id='topbar'>
+<div id='toolbar'>
+<a class='btn btn-sm btn-info' id='btnShareFolder' title='向其他人分享该目录'>
+<i class='fa fa-share'></i>
+</a>
+<div class='btn-group'>
+<button class='btn btn-sm btn-info dropdown-toggle' data-toggle='dropdown' title='新建..'>
+<i class='fa fa-plus'></i>
+<span class='caret'></span>
+</button>
+<ul class='dropdown-menu'>
+<li>
+<a href='#' id='btnCreateFile'>
+<i class='fa fa-file'></i>
+新建文件
+</a>
+</li>
+<li>
+<a href='#' id='btnCreateFolder'>
+<i class='fa fa-folder'></i>
+新建子目录
+</a>
+</li>
+</ul>
+</div>
+<div class='btn-group'>
+<button class='btn btn-sm btn-info dropdown-toggle' data-toggle='dropdown' title='上传..'>
+<i class='fa fa-cloud-upload'></i>
+<span class='caret'></span>
+</button>
+<ul class='dropdown-menu'>
+<li>
+<a href='#' id='btnUploadFiles'>
+<i class='fa fa-file'></i>
+上传文件
+</a>
+</li>
+<li>
+<a href='#' id='btnUploadFolder'>
+<i class='fa fa-folder'></i>
+上传整个目录
+</a>
+</li>
+</ul>
+</div>
+<a class='btn btn-sm btn-info' id='btnDownloadFolder' title='下载当前目录'>
+<i class='fa fa-download'></i>
+</a>
+<a class='btn btn-sm btn-info' id='btnLogout' title='重新登录'>
+<i class='fa fa-power-off'></i>
+</a>
+<a class='btn btn-sm btn-info' id='btnIssues' title='提交问题'>
+<i class='fa fa-info'></i>
+</a>
+<input class='form-control' id='inputFilter' name='filter' placeholder='筛选列表' type='text'>
+</div>
+<ol class='breadcrumb' id='path'></ol>
+</div>
+<div class='preloader load7'>
+<div class='loader'></div>
+</div>
+<table class='table table-hover'>
+<thead>
+<th></th>
+<th>尺寸</th>
+<th>最后修改时间</th>
+<th></th>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+<div id='editor'>
+<div class='navbar navbar-default navbar-fixed-top'>
+<ul class='nav navbar-nav'>
+<li>
+<a href='#' id='btnSaveEditor'>
+<i class='fa fa-save'></i>
+保存
+</a>
+</li>
+<li>
+<a href='#' id='btnReloadEditor'>
+<i class='fa fa-reply'></i>
+重新加载
+</a>
+</li>
+</ul>
+</div>
+<div class='editor'></div>
+</div>
+<div class='load6' id='loading'>
+<div class='loader'>Loading...</div>
+<div id='loadingText'></div>
+</div>
+
+  </body>
+</html>
