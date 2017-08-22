@@ -1,31 +1,38 @@
-manager-for-uypun
+manager-for-upyun
 =====
 
-manager-for-uypun 是一个又拍云资源管理器，使用它您可以上传、下载和管理您储存于又拍云空间中的文件资源。
+manager-for-upyun 是一个又拍云资源管理器，使用它您可以上传、下载和管理您储存于又拍云空间中的文件资源。
 
 又拍云是一个非结构化数据云存储、云处理、云分发平台，关于又拍云的详细介绍请参见[又拍云官方网站](https://www.upyun.com/)。没有又拍云帐号？可以使用这个公用的演示帐号登录：
 
 ```
-TODO: 提供一个演示账号
+操作员：layerssss
+操作员密码：MD5_f92a36b6eb4d964c1b64cc008ecac009
+空间名：manager-for-upyun
 ```
 
 可以直接在打开以下地址来登录演示空间：
 
 ```
-upyun://demo:MD5_bed3482f502c7bbfb6f9fa54f36e77d7@manager-demo/
+upyun://layerssss:MD5_f92a36b6eb4d964c1b64cc008ecac009@manager-for-upyun/
 ```
 
 下载
 ------
 
-* 当前版本： 0.0.6 (更新于2014-06-01)
+* 当前版本： 0.0.7 (更新于2017-08-22)
+* [Windows / Mac / Linux](https://github.com/layerssss/manager-for-upyun/releases)
 
-```
-TODO: 提供下载和截屏
-```
+![01.png](screenshots/01.png)
+![02.png](screenshots/02.png)
+![03.png](screenshots/03.png)
 
 发布说明
 ------
+
+0.0.7 (更新于2017-08-22)
+
+* 移植到 Electron
 
 0.0.6 (更新于2014-06-01)
 
@@ -67,8 +74,8 @@ TODO: 提供下载和截屏
 使用的技术
 ------
 
-* node-webkit `# TODO: 替换为 Electron`
-* middleman
+* Electron
+* webpack
 * ace editor
 
 源码授权
