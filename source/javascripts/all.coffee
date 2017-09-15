@@ -377,7 +377,7 @@ Messenger.options =
         label: '将该地址复制到剪切版'
         action: (ev)=>
           $(ev.currentTarget).text '已复制到剪切版'
-          Electroni.clipboard.writeText url
+          Electron.clipboard.writeText url
 @action_share = (url)=>
   url = "upyun://#{@username}:#{@password}@#{@bucket}#{url}"
   msg = Messenger().post
