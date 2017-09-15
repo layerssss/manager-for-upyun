@@ -20,7 +20,7 @@ upyun://layerssss:MD5_f92a36b6eb4d964c1b64cc008ecac009@manager-for-upyun/
 下载
 ------
 
-* 当前版本： 0.0.7 (更新于2017-08-22)
+* 当前版本： 0.0.8 (更新于2017-09-15)
 * [Windows / Mac / Linux](https://github.com/layerssss/manager-for-upyun/releases)
 
 ![01.png](screenshots/01.png)
@@ -29,6 +29,10 @@ upyun://layerssss:MD5_f92a36b6eb4d964c1b64cc008ecac009@manager-for-upyun/
 
 发布说明
 ------
+
+0.0.8 (更新于2017-09-15)
+
+* 修复无法将文件公共地址复制到剪切板的问题
 
 0.0.7 (更新于2017-08-22)
 
