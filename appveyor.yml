@@ -4,7 +4,7 @@ environment:
   matrix:
     - platform: x64
   GH_TOKEN:
-    secure: MbDdGuVFVB201kz9IM8K93eAKcyzltsFeLMBxJqZDnR0sLW59E13rHiJ5wHV76/x
+    secure: dqaeEhkA+L9BZ0IxHyB5euvuq201mxDelxKcvwlsovvWYZbTReC29RyvZp/wCP91
 
 image: Visual Studio 2015
 
