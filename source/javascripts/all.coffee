@@ -8,11 +8,12 @@ catch
   $ '#favs'
     .empty()
   for k, fav of @m_favs
+    fav.origin ?= "http://#{fav.bucket}.b0.upaiyun.com"
     $ li = document.createElement 'li'
       .appendTo '#favs'
     $ document.createElement 'a'
       .appendTo li
-      .text k
+      .text "#{k} (#{fav.origin})"
       .attr href: '#'
       .data 'fav', fav
       .click (ev)=>
@@ -444,9 +445,9 @@ Messenger.options =
     .appendTo '#path'
   $ document.createElement 'a'
     .appendTo li
-    .text @bucket
+    .text "#{@bucket} (#{@origin})"
     .prepend @createIcon 'cloud'
-    .attr 'href', "http://#{@bucket}.b0.upaiyun.com/"
+    .attr 'href', "#{@origin}/"
     .data 'url', '/'
   for seg, i in segs
     url = '/' + segs[0..i].map(encodeURIComponent).join('/') + '/'
@@ -457,7 +458,7 @@ Messenger.options =
       .appendTo li
       .text seg
       .prepend @createIcon 'folder'
-      .attr 'href', "http://#{@bucket}.b0.upaiyun.com#{url}"
+      .attr 'href', "#{@origin}#{url}"
       .data 'url', url
   $ '#path li:not(:first-child)>a'
     .click (ev)=>
@@ -623,7 +624,7 @@ Messenger.options =
             .attr title: '在浏览器中访问该文件'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'globe'
-            .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
+            .data 'url', "#{@origin}#{file.url}"
             .click (ev)=>
               url = $(ev.currentTarget).data 'url'
               Electron.shell.openExternal url
@@ -632,7 +633,7 @@ Messenger.options =
             .attr title: '公共地址'
             .addClass 'btn btn-info btn-xs'
             .prepend @createIcon 'code'
-            .data 'url', "http://#{@bucket}.b0.upaiyun.com#{file.url}"
+            .data 'url', "#{@origin}#{file.url}"
             .data 'filename', file.filename
             .click (ev)=>
               filename = $(ev.currentTarget).data 'filename'
@@ -698,7 +699,15 @@ $ =>
       throw e
 
 
-
+  $ '#inputBucket'
+    .on 'input', (event)=>
+      origin = $('#inputOrigin').val()
+      return unless origin.endsWith('.b0.upaiyun.com')
+      $('#inputOrigin').val("http://#{event.currentTarget.value}.b0.upaiyun.com")
+  $ '#inputOrigin'
+    .on 'change', (event)=>
+      if !event.currentTarget.value.trim()
+        $(event.currentTarget).val("http://#{$('#inputBucket').val()}.b0.upaiyun.com")
   $ '#btnAddFav'
     .click =>
       fav = $('#formLogin').serializeObject()
