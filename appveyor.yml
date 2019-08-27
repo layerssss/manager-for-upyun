@@ -25,4 +25,4 @@ test_script:
   - yarn --version
 
 on_success:
-  - ps: ls .\dist\win\*.exe | % { Push-AppveyorArtifact $_.FullName }
+  - ps: Get-ChildItem .\dist\*\*.exe | % { Push-AppveyorArtifact $_.FullName }
