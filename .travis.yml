@@ -1,17 +1,13 @@
 sudo: required
 dist: trusty
 language: node_js
-cache:
-  directories:
-    - "$HOME/.cache/electron-builder"
-    - "$HOME/.npm"
-    - "$HOME/.electron"
+cache: yarn
 matrix:
   include:
     - os: osx
-      node_js: 6
+      node_js: 8
     - os: linux
-      node_js: 6
+      node_js: 8
 addons:
   apt:
     packages:
@@ -24,7 +20,7 @@ addons:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 3; fi
 install:
-  - npm install
+  - yarn
 before_script:
   - export
 script:
