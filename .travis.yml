@@ -24,7 +24,7 @@ install:
 before_script:
   - export
 script:
-  - npm run dist
+  - yarn release
 env:
   global:
     # GH_TOKEN:

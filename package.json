@@ -12,7 +12,7 @@
   },
   "scripts": {
     "app": "electron .",
-    "dist": "webpack && build",
+    "release": "webpack && build",
     "watch": "webpack --watch"
   },
   "main": "lib/app.js",

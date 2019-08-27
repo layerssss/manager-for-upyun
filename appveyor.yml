@@ -16,7 +16,7 @@ install:
   - yarn
 
 build_script:
-  - yarn dist
+  - yarn release
 
 shallow_clone: true
 
