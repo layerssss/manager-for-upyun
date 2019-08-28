@@ -61,7 +61,7 @@
     "css-loader": "^0.28.4",
     "electron": "^1.6.11",
     "electron-builder": "^21.2.0",
-    "electron-builder-squirrel-windows": "^19.24.0",
+    "electron-builder-squirrel-windows": "^21.2.0",
     "exports-loader": "^0.6.4",
     "extract-text-webpack-plugin": "^3.0.0",
     "font-awesome": "^4.7.0",
