@@ -6,10 +6,10 @@ environment:
   GH_TOKEN:
     secure: dqaeEhkA+L9BZ0IxHyB5euvuq201mxDelxKcvwlsovvWYZbTReC29RyvZp/wCP91
 
-image: Visual Studio 2015
+image: Visual Studio 2017
 
 init:
-  - npm config set msvs_version 2015 # we need this to build `pty.js`
+  - npm config set msvs_version 2017
 
 install:
   - ps: Install-Product node 8 x64
