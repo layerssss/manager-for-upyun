@@ -20,7 +20,7 @@ upyun://layerssss:MD5_f92a36b6eb4d964c1b64cc008ecac009@manager-for-upyun/
 下载
 ------
 
-* 当前版本： 0.0.8 (更新于2017-09-15)
+* 当前版本： 0.0.9 (更新于2019-08-28)
 * [Windows / Mac / Linux](https://github.com/layerssss/manager-for-upyun/releases)
 
 ![01.png](screenshots/01.png)
@@ -29,6 +29,10 @@ upyun://layerssss:MD5_f92a36b6eb4d964c1b64cc008ecac009@manager-for-upyun/
 
 发布说明
 ------
+
+0.0.9 (更新于2019-08-28)
+
+* 增加对自定义域名的支持
 
 0.0.8 (更新于2017-09-15)
 
