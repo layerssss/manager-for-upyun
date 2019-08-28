@@ -12,7 +12,7 @@
   },
   "scripts": {
     "app": "electron .",
-    "release": "webpack && build",
+    "release": "webpack && electron-builder build",
     "watch": "webpack --watch"
   },
   "main": "lib/app.js",
@@ -47,20 +47,20 @@
   "license": "MIT",
   "dependencies": {
     "electron-prompt": "^0.3.0",
-    "electron-updater": "^2.18.2",
+    "electron-updater": "^4.1.2",
     "mkdirp": "^0.3.5",
     "request": "^2.34.0"
   },
   "devDependencies": {
-    "async": "^0.7.0",
     "ace-builds": "^1.2.8",
+    "async": "^0.7.0",
     "bootstrap": "^3.3.7",
     "bootswatch": "^3.3.7",
     "coffee-loader": "^0.7.3",
     "coffee-script": "^1.12.7",
     "css-loader": "^0.28.4",
     "electron": "^1.6.11",
-    "electron-builder": "^19.19.1",
+    "electron-builder": "^21.2.0",
     "electron-builder-squirrel-windows": "^19.24.0",
     "exports-loader": "^0.6.4",
     "extract-text-webpack-plugin": "^3.0.0",
