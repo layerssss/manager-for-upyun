@@ -5,9 +5,9 @@ cache: yarn
 matrix:
   include:
     - os: osx
-      node_js: 8
+      node_js: 10
     - os: linux
-      node_js: 8
+      node_js: 10
 addons:
   apt:
     packages:

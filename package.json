@@ -13,6 +13,7 @@
   "scripts": {
     "app": "electron .",
     "release": "webpack && electron-builder build",
+    "dist": "webpack && electron-builder build",
     "watch": "webpack --watch"
   },
   "main": "lib/app.js",
